@@ -73,3 +73,4 @@ module de_canonicalize(
         //64-bit instructions
         else opcodeOut_pre = opcodeIn;
     end
+endmodule

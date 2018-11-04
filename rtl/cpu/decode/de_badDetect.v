@@ -35,3 +35,4 @@ module de_badDetect(
             endcase
         end
     end
+endmodule
