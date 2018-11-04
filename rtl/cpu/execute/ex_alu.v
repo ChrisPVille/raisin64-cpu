@@ -7,6 +7,7 @@ module ex_alu(
     output[63:0] out,
 
     //# {{control|Control Signals}}
+    input enable,
     input[2:0] unit,
     input[1:0] op
     );
@@ -17,7 +18,7 @@ module ex_alu(
     always @(*)
     begin
         out_pre = 64'h0;
-        case(unit)
+        if(enable) case(unit)
             3'h0: //Basic integer math
                 case(op[0])
                     0,2: out_pre = in1 + in2; //ADD
