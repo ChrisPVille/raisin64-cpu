@@ -1,7 +1,8 @@
-//Raisin64 Instruction Scheduler - Committed Register Table
-//Allows
+//Raisin64 Instruction Scheduler - Pending Register Table
+//Keeps track of which registers are currently issued for writing
+//to the various execution units
 
-module cr_table_reg #(
+module pr_table #(
     parameter NUM_READ_PORTS = 3,
     ) (
     //# {{clocks|Clocking}}

@@ -1,20 +1,20 @@
 //Raisin64 Register File
 //Registered dual-ported register file two read, one write port
 
-module rf_reg(
+module regfile(
     //# {{clocks|Clocking}}
     input clk,
     input rst_n,
 
     //# {{data|Register Interface}}
     input[63:0] w_data,
-    input[5:0] w_rn,
     output reg[63:0] r1_data,
     output reg[63:0] r2_data,
+
+    //# {{control|Register Control}}
     input[5:0] r1_rn,
     input[5:0] r2_rn,
-
-    //# {{control|Control Signals}}
+    input[5:0] w_rn,
     input w_en
 
     //# {{debug|Debug Signals}}
