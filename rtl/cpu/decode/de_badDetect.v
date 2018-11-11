@@ -2,7 +2,7 @@
 
 module de_badDetect(
     //# {{data|Instruction Data}}
-    input[63:0] opcodeIn,
+    input[63:0] instIn,
 
     //# {{control|Control Signals}}
     output badOpcode

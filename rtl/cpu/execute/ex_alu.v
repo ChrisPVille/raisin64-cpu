@@ -13,14 +13,13 @@ module ex_alu(
     //# {{control|Dispatch Control Signals}}
     input ex_enable,
     output ex_busy,
-    input[5:0] Rd_in_rn,
+    input[5:0] rd_in_rn,
     input[2:0] unit,
     input[1:0] op,
 
     //# {{control|Commit Control Signals}}
-    output reg[5:0] Rd_out_rn,
+    output reg[5:0] rd_out_rn,
     input stall
-
     );
 
     wire[63:0] out_pre;
@@ -41,7 +40,7 @@ module ex_alu(
     //As this is a one-cycle stage, busy is simple
     assign ex_busy = stall | ex_enable;
 
-    ex_alu_s1 ex_aly_s1_1(
+    ex_alu_s1 ex_alu_s1_1(
         .in1(in1), .in2(in2), .out(out_pre), .enable(ex_enable),
         .unit(unit), .op(op)
         );
