@@ -40,7 +40,7 @@ module ex_alu_s1(
             3'h3: //Bitwise Operations
                 case(op)
                     0: out_pre = in1 & in2; //AND
-                    1: out_pre = in1 ~| in2; //NOR
+                    1: out_pre = !(in1 | in2); //NOR
                     2: out_pre = in1 | in2; //OR
                     3: out_pre = in1 ^ in2; //XOR
                 endcase

@@ -94,14 +94,13 @@ module pipeline(
 
     wire[63:0] sc_busy_regs;
 
-    wire[5:0] sc_free_rn[0:1];
+    wire[5:0] sc_free_rn[1:0];
 
     pr_table pr_table1 (
         .clk(clk), .rst_n(rst_n), .reg_busy(sc_busy_regs),
-        .busy_rn[0](de_r1_rn), .busy_en[0](de_allow_advance),
-        .busy_rn[1](de_r2_rn), .busy_en[1](de_allow_advance),
-        .free_rn(sc_free_rn)
-//        .free_rn[1](sc_free_rn[1]), .free_en[1](sc_free_rn_en[1])
+        .busy0_rn(de_r1_rn), .busy0_en(de_allow_advance),
+        .busy1_rn(de_r2_rn), .busy1_en(de_allow_advance),
+        .free0_rn(sc_free_rn[0]), .free1_rn(sc_free_rn[1])
         );
 
     schedule schedule1(
@@ -133,7 +132,7 @@ module pipeline(
             sc_unit <= 3'h0;
             sc_op <= 2'h0;
             sc_imm_data <= 56'h0;
-        else begin
+        end else begin
             sc_type <= de_type;
             sc_unit <= de_unit;
             sc_op <= de_op;

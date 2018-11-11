@@ -11,10 +11,13 @@ module pr_table(
     output reg[63:0] reg_busy,
 
     //# {{control|Control Signals}}
-    input[6:0] busy_rn[0:1],
-    input busy_en[0:1],
+    input[6:0] busy0_rn,
+    input[6:0] busy1_rn,
+    input busy0_en,
+    input busy1_en,
 
-    input[6:0] free_rn[0:1], //TODO Two free ports aren't necessary if we only have one register file write port
+    input[6:0] free0_rn, //TODO Two free ports aren't necessary if we only have one register file write port
+    input[6:0] free1_rn
     );
 
     integer i;
@@ -23,16 +26,16 @@ module pr_table(
     begin
         if(~rst_n) reg_busy <= 64'h0;
         else begin
-            if(busy_en[0] & |busy_rn[0]) begin
-                reg_busy[busy_rn[0]] <= 1;
+            if(busy0_en & |busy0_rn) begin
+                reg_busy[busy0_rn] <= 1;
             end
 
-            if(busy_en[1] & |busy_rn[1]) begin
-                reg_busy[busy_rn[1]] <= 1;
+            if(busy1_en & |busy1_rn) begin
+                reg_busy[busy1_rn] <= 1;
             end
 
-            reg_busy[free_rn[0]] <= 0;
-            reg_busy[free_rn[1]] <= 0;
+            reg_busy[free0_rn] <= 0;
+            reg_busy[free1_rn] <= 0;
         end
     end
 

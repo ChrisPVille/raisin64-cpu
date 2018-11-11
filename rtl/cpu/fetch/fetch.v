@@ -40,7 +40,7 @@ module fetch(
         if(~rst_n) instData <= 64'h0;
         else if(imem_data_valid) begin
             instData <= imem_data;
-        else begin
+        end else begin
             instData <= 64'h0;
         end
     end

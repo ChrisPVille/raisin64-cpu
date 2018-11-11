@@ -40,7 +40,7 @@
 `define OP_BAD_1A         6'h1a
 `define OP_BAD_1B         6'h1b
 `define OP_SYSCALL        6'h1c
-`define OP_F*             6'h1d
+`define OP_FSTAR          6'h1d
 `define OP_JAL            6'h1e
 `define OP_J              6'h1f
 `define OP_ADDI           6'h20
