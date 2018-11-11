@@ -9,10 +9,10 @@ module schedule(
     //# {{data|Decoded Instruction Data}}
     input type,
     input[2:0] unit,
-    input[6:0] r1_in_rn,
-    input[6:0] r2_in_rn,
-    input[6:0] rd_in_rn,
-    input[6:0] rd2_in_rn,
+    input[5:0] r1_in_rn,
+    input[5:0] r2_in_rn,
+    input[5:0] rd_in_rn,
+    input[5:0] rd2_in_rn,
 
     //# {{control|Decoded Instruction Control}}
     output instIssued,
@@ -21,8 +21,8 @@ module schedule(
     input[63:0] reg_busy,
 
     //# {{data|Execution Units Register Data}}
-    output reg[6:0] rd_out_rn,
-    output reg[6:0] rd2_out_rn,
+    output reg[5:0] rd_out_rn,
+    output reg[5:0] rd2_out_rn,
 
     //# {{control|Execution Units Control Signals}}
     output reg alu1_en,

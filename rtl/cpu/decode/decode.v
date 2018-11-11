@@ -17,15 +17,15 @@ module decode(
     output reg type,
     output reg[2:0] unit,
     output reg[1:0] op,
-    output reg[6:0] rs1_rn,
-    output reg[6:0] rs2_rn,
-    output reg[6:0] rd_rn,
-    output reg[6:0] rd2_rn,
+    output reg[5:0] rs1_rn,
+    output reg[5:0] rs2_rn,
+    output reg[5:0] rd_rn,
+    output reg[5:0] rd2_rn,
     output reg[56:0] imm_data,
 
     //Indicates which registers are loaded for this instruction
-    output r1_rn,
-    output r2_rn,
+    output[5:0] r1_rn,
+    output[5:0] r2_rn,
 
     //# {{control|Scheduler Feedback}}
     input allow_advance
@@ -57,14 +57,14 @@ module decode(
             load_rs1_rd <= 0;
         end else begin
             if(~canonInst[61]) begin //R-Type
-                if(canonInst[60:58] < 4'h5 | //Units 0-4
+                if(canonInst[60:58] < 3'h5 | //Units 0-4
                   (&canonInst[60:58] && canonInst[57:56] == 2'h1)) //F* Inst
                     load_rs1_rs2 <= 1;
                 else if(&canonInst[60:58] & canonInst[57]) //JAL, J
                     load_rs1 <= 1;
             end else begin //I-Type
-                if(canonInst[60:58] < 4'h5 | //Units 0-4
-                  canonInst[60:58] == 8'h5 && |canonInst[57:56]) //Unit 5 except LUI
+                if(canonInst[60:58] < 3'h5 | //Units 0-4
+                  canonInst[60:58] == 3'h5 && |canonInst[57:56]) //Unit 5 except LUI
                     load_rs1 <= 1;
                 else if(canonInst[60:58] == 3'h6 | //Unit 6
                   &canonInst[60:58] & ~canonInst[57]) //BEQ, BEQAL

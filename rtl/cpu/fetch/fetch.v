@@ -34,6 +34,7 @@ module fetch(
     end
 
     assign imem_addr = seq_pc;
+    assign imem_addr_valid = 1;
 
     always @(posedge clk or negedge rst_n)
     begin

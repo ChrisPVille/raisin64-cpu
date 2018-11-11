@@ -34,7 +34,7 @@ module pipeline_tb();
 
         #30 rst_n = 1;
 
-        #3000 $finish;
+        //#3000 $finish;
     end
 
 endmodule

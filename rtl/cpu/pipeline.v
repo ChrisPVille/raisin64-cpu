@@ -44,7 +44,8 @@ module pipeline(
     wire[5:0] de_rs2_rn;
     wire[55:0] de_imm_data;
 
-    wire de_r1_rn, de_r2_rn;
+    wire[5:0] de_r1_rn;
+    wire[5:0] de_r2_rn;
 
     wire de_allow_advance;
 
@@ -64,7 +65,6 @@ module pipeline(
     wire[63:0] rf_data1;
     wire[63:0] rf_data2;
     wire[5:0] rf_writeback_rn;
-    wire rf_writeback_en;
 
     //Register file selected by the scheduler, registered in the execute stage
     //and written to during commit.
@@ -94,13 +94,11 @@ module pipeline(
 
     wire[63:0] sc_busy_regs;
 
-    wire[5:0] sc_free_rn[1:0];
-
     pr_table pr_table1 (
         .clk(clk), .rst_n(rst_n), .reg_busy(sc_busy_regs),
         .busy0_rn(de_r1_rn), .busy0_en(de_allow_advance),
         .busy1_rn(de_r2_rn), .busy1_en(de_allow_advance),
-        .free0_rn(sc_free_rn[0]), .free1_rn(sc_free_rn[1])
+        .free0_rn(rf_writeback_rn), .free1_rn(6'h0)
         );
 
     schedule schedule1(
