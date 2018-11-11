@@ -32,15 +32,17 @@ module ex_alu(
         if(~rst_n) begin
             valid <= 0;
             out <= 64'h0;
-            Rd_out_rn <= 6'h0;
+            rd_out_rn <= 6'h0;
         end else if(~stall) begin
             valid <= ex_enable;
             out <= out_pre;
-            Rd_out_rn <= Rd_in_rn;
+            rd_out_rn <= rd_in_rn;
         end
     end
 
-    always @(*) if(stall&ex_enable) $error("Told to execute ALU when commit was stalled");
+    initial begin
+        if(stall&ex_enable) $error("Told to execute ALU when commit was stalled");
+    end
 
     //As this is a one-cycle stage, busy is simple
     assign ex_busy = stall | ex_enable;

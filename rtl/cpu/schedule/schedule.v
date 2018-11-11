@@ -48,7 +48,7 @@ module schedule(
     assign branch_type = unit==3'h7;
 
     wire source_regs_in_use;
-    assign source_regs_in_use = regBusy[r1_in_rn] | regBusy[r2_in_rn];
+    assign source_regs_in_use = reg_busy[r1_in_rn] | reg_busy[r2_in_rn];
 
     always @(posedge clk or negedge rst_n)
     begin
@@ -67,24 +67,24 @@ module schedule(
             if(~source_regs_in_use) begin
                 if(alu_type & ~alu1_busy) begin
                     alu1_en <= 1;
-                    rd_out_rn <= Rd_rn;
+                    rd_out_rn <= rd_in_rn;
 
                 end else if(alu_type & ~alu2_busy) begin
                     alu2_en <= 1;
-                    rd_out_rn <= Rd_rn;
+                    rd_out_rn <= rd_in_rn;
 
                 end else if(advint_type & ~advint_busy) begin
                     advint_en <= 1;
-                    rd_out_rn <= Rd_rn;
-                    rd2_out_rn <= Rd2_rn;
+                    rd_out_rn <= rd_in_rn;
+                    rd2_out_rn <= rd2_in_rn;
 
                 end else if(memunit_type & ~memunit_busy) begin
                     memunit_en <= 1;
-                    rd_out_rn <= Rd_rn;
+                    rd_out_rn <= rd_in_rn;
 
                 end else if(branch_type & ~branch_busy) begin
                     branch_en <= 1;
-                    rd_out_rn <= Rd_rn;
+                    rd_out_rn <= rd_in_rn;
                 end
             end
         end
