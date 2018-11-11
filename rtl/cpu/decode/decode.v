@@ -23,10 +23,9 @@ module decode(
     output reg[6:0] rd2_rn,
     output reg[56:0] imm_data
 
-    //Indicates whether one or both Rs fields are used for this instruction
-    output reg load_rs1,
-    output reg load_rs1_rs2,
-    output reg load_rs1_rd;
+    //Indicates which registers are loaded for this instruction
+    output r1_rn,
+    output r2_rn,
     );
 
     wire[63:0] canonInst;
@@ -43,6 +42,8 @@ module decode(
     assign advance16 = ~instIn[63];
     assign advance32 = (instIn[63:62] == 2'b10);
     assign advance64 = (instIn[63:62] == 2'b11);
+
+    reg load_rs1, load_rs1_rs2, load_rs1_rd;
 
     always @(posedge clk or negedge rst_n)
     begin
@@ -68,32 +69,31 @@ module decode(
         end
     end
 
+    assign r1_rn = (load_rs1|load_rs1_rs2|load_rs1_rd) ? canonInst[43:38] : 6'h0;
+    assign r2_rn = load_rs1_rd ? canonInst[55:50] :
+                      load_rs1_rs2 ? canonInst[37:32] :
+                      6'h0;
+
     always @(posedge clk or negedge rst_n)
     begin
         if(~rst_n) begin
             type <= 0;
             unit <= 0;
             op <= 0;
-            Rs1_rn <= 0;
-            Rs2_rn <= 0;
-            Rd_rn <= 0;
-            Rd2_rn <= 0;
+            rs1_rn <= 0;
+            rs2_rn <= 0;
+            rd_rn <= 0;
+            rd2_rn <= 0;
             imm_data <= 0;
         end else begin
             type <= canonInst[61];
             unit <= canonInst[60:58];
             op <= canonInst[57:56];
-            Rs1_rn <= canonInst[43:38];
-            Rs2_rn <= canonInst[37:32];
-            Rd_rn <= canonInst[55:50];
-            Rd2_rn <= canonInst[49:44];
+            rs1_rn <= canonInst[43:38];
+            rs2_rn <= canonInst[37:32];
+            rd_rn <= canonInst[55:50];
+            rd2_rn <= canonInst[49:44];
             imm_data <= canonInst[55:0];
-
-                   (canonInst[60:58] < 4'h5 |
-                   (&canonInst[60:58] & canonInst[57:56] == 2'h1))))
-            begin
-                both_rs <= 1;
-            end
         end
     end
 

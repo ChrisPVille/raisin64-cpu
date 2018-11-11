@@ -23,22 +23,15 @@ module pipeline(
     wire[5:0] de_rs2_rn;
     wire[55:0] de_imm_data;
 
-    wire de_load_rs1, de_load_rs1_rs2, de_load_rs1_rd;
+    wire de_r1_rn, de_r2_rn;
 
     decode decode1(
         .clk(clk), .rst_n(rst_n), .instIn(fe_inst), .advance16(fe_advance16),
         .advance32(fe_advance32), .advance64(fe_advance64), .type(de_type),
         .unit(de_unit), .op(de_op), .rs1_rn(de_rs1_rn), .rs2_rn(de_rs2_rn),
         .rd_rn(de_rd_rn), .rd2_rn(de_rd2_rn), .imm_data(de_imm_data),
-        .load_rs1(de_load_rs1), .load_rs1_rs2(de_load_rs1_rs2),
-        .load_rs1_rd(de_load_rs1_rd)
+        .r1_rn(de_r1_rn), .r2_rn(de_r2_rn),
         );
-
-    wire de_r1_rn, de_r2_rn;
-    assign de_r1_rn = (de_load_rs1|de_load_rs1_rs2|de_load_rs1_rd) ? de_rs1_rn : 0;
-    assign de_r2_rn = de_load_rs1_rd ? de_rd_rn :
-                      de_load_rs1_rs2 ? de_rs2_rn :
-                      0;
 
     ////////// REG FILE  //////////
     //Concurrent with Schedule phase
