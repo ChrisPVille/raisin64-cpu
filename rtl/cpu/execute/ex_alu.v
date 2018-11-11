@@ -19,6 +19,7 @@ module ex_alu(
 
     //# {{control|Commit Control Signals}}
     output reg[5:0] rd_out_rn,
+    output reg valid,
     input stall
     );
 
@@ -28,8 +29,12 @@ module ex_alu(
     //stalled by the next stage (i.e. our result has somewhere to go).
     always @(posedge clk or negedge rst_n)
     begin
-        if(~rst_n) out <= 64'h0;
-        else if(~stall) begin
+        if(~rst_n) begin
+            valid <= 0;
+            out <= 64'h0;
+            Rd_out_rn <= 6'h0;
+        end else if(~stall) begin
+            valid <= ex_enable;
             out <= out_pre;
             Rd_out_rn <= Rd_in_rn;
         end

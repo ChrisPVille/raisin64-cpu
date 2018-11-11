@@ -14,8 +14,7 @@ module pr_table(
     input[6:0] busy_rn[0:1],
     input busy_en[0:1],
 
-    input[6:0] free_rn[0:1],
-    input free_en[0:1]
+    input[6:0] free_rn[0:1], //TODO Two free ports aren't necessary if we only have one register file write port
     );
 
     integer i;
@@ -32,13 +31,8 @@ module pr_table(
                 reg_busy[busy_rn[1]] <= 1;
             end
 
-            if(free_en[0]) begin
-                reg_busy[free_rn[0]] <= 0;
-            end
-
-            if(free_en[1]) begin
-                reg_busy[free_rn[1]] <= 0;
-            end
+            reg_busy[free_rn[0]] <= 0;
+            reg_busy[free_rn[1]] <= 0;
         end
     end
 

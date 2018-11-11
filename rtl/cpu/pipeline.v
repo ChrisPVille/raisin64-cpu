@@ -71,7 +71,7 @@ module pipeline(
     regfile regfile1(
         .clk(clk), .rst_n(rst_n), .w_data(rf_writeback), .r1_data(rf_data1),
         .r2_data(rf_data2), .r1_rn(de_r1_rn), .r2_rn(de_r2_rn),
-        .w_rn(rf_writeback_rn), .w_en(rf_writeback_en)
+        .w_rn(rf_writeback_rn), .w_en(|rf_writeback_rn)
         );
 
     ////////// SCHEDULE  //////////
@@ -82,6 +82,7 @@ module pipeline(
     wire sc_advint_en;
     wire sc_memunit_en;
     wire sc_branch_en;
+
     wire sc_alu1_busy;
     wire sc_alu2_busy;
     wire sc_advint_busy;
@@ -94,13 +95,12 @@ module pipeline(
     wire[63:0] sc_busy_regs;
 
     wire[5:0] sc_free_rn[0:1];
-    wire sc_free_rn_en[0:1];
 
     pr_table pr_table1 (
         .clk(clk), .rst_n(rst_n), .reg_busy(sc_busy_regs),
         .busy_rn[0](de_r1_rn), .busy_en[0](de_allow_advance),
         .busy_rn[1](de_r2_rn), .busy_en[1](de_allow_advance),
-        .free_rn(sc_free_rn), .free_en(sc_free_rn_en),
+        .free_rn(sc_free_rn)
 //        .free_rn[1](sc_free_rn[1]), .free_en[1](sc_free_rn_en[1])
         );
 
@@ -145,20 +145,57 @@ module pipeline(
 
     wire[63:0] ex_alu1_result;
     wire[63:0] ex_alu2_result;
+    wire[63:0] ex_advint_result;
+    wire[63:0] ex_advint_result2;
+    wire[63:0] ex_memunit_result;
+
+    wire[5:0] ex_alu1_rd_rn;
+    wire[5:0] ex_alu2_rd_rn;
+    wire[5:0] ex_advint_rd_rn;
+    wire[5:0] ex_advint_rd2_rn;
+    wire[5:0] ex_memunit_rd_rn;
+
+    wire ex_alu1_valid;
+    wire ex_alu2_valid;
+    wire ex_advint_valid;
+    wire ex_memunit_valid;
+
+    wire ex_alu1_stall;
+    wire ex_alu2_stall;
+    wire ex_advint_stall;
+    wire ex_memunit_stall;
+    wire ex_branch_stall;
 
     ex_alu ex_alu1(
         .clk(clk), .rst_n(rst_n), .in1(rf_data1), .in2(sc_type ? sc_imm_data[31:0] : rf_data2), .out(ex_alu1_result),
         .ex_enable(sc_alu1_en), .ex_busy(sc_alu1_busy), .rd_in_rn(sc_rd_rn), .unit(sc_unit),
-        .op(sc_op), .rd_out_rn(), .stall()
+        .op(sc_op), .rd_out_rn(ex_alu1_rd_rn), .valid(ex_alu1_valid), .stall(ex_alu1_stall)
         );
 
     ex_alu ex_alu2(
         .clk(clk), .rst_n(rst_n), .in1(rf_data1), .in2(sc_type ? sc_imm_data[31:0] : rf_data2), .out(ex_alu2_result),
         .ex_enable(sc_alu2_en), .ex_busy(sc_alu2_busy), .rd_in_rn(sc_rd_rn), .unit(sc_unit),
-        .op(sc_op), .rd_out_rn(), .stall()
+        .op(sc_op), .rd_out_rn(ex_alu2_rd_rn), .valid(ex_alu2_valid), .stall(ex_alu2_stall)
         );
 
     //////////  COMMIT   //////////
 
+    commit commit1(
+        .clk(clk), .rst_n(rst_n),
+        .alu1_result(ex_alu1_result), .alu2_result(ex_alu2_result),
+        .advint_result(ex_advint_result), .advint_result2(ex_advint_result2),
+        .memunit_result(ex_memunit_result),
+        .alu1_rn(ex_alu1_rd_rn), .alu2_rn(ex_alu2_rd_rn),
+        .advint_rn(ex_advint_rd_rn), .advint_rn2(ex_advint_rd2_rn),
+        .memunit_rn(ex_memunit_rd_rn),
+        .alu1_valid(ex_alu1_valid), .alu2_valid(ex_alu2_valid),
+        .advint_valid(ex_advint_valid),
+        .memunit_valid(ex_memunit_valid),
+        .alu1_stall(ex_alu1_stall), .alu2_stall(ex_alu2_stall),
+        .advint_stall(ex_advint_stall),
+        .memunit_stall(ex_memunit_stall),
+        .branch_stall(ex_branch_stall),
+        .write_data(rf_writeback), .write_rn(rf_writeback_rn)
+        );
 
 endmodule
