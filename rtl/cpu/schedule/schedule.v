@@ -9,6 +9,8 @@ module schedule(
     //# {{data|Decoded Instruction Data}}
     input type,
     input[2:0] unit,
+    input[6:0] r1_in_rn,
+    input[6:0] r2_in_rn,
     input[6:0] rd_in_rn,
     input[6:0] rd2_in_rn,
 
@@ -20,9 +22,7 @@ module schedule(
 
     //# {{data|Execution Units Register Data}}
     output reg[6:0] rd_out_rn,
-    output reg rd_out_rn_en,
     output reg[6:0] rd2_out_rn,
-    output reg rd2_out_rn_en,
 
     //# {{control|Execution Units Control Signals}}
     output reg alu1_en,
@@ -47,6 +47,9 @@ module schedule(
     assign memunit_type = type && (unit==3'h4 | unit==3'h5 | unit==3'h6);
     assign branch_type = unit==3'h7;
 
+    wire source_regs_in_use;
+    assign source_regs_in_use = regBusy[r1_in_rn] | regBusy[r2_in_rn];
+
     always @(posedge clk or negedge rst_n)
     begin
         if(~rst_n) begin
@@ -57,39 +60,32 @@ module schedule(
             branch_en <= 0;
             rd_out_rn <= 6'h0;
             rd2_out_rn <= 6'h0;
-            rd_out_rn_en <= 0;
-            rd2_out_rn_en <= 0;
 
         end else begin
-            rd_out_rn_en <= 0;
-            rd2_out_rn_en <= 0;
+            //Only allow the scheduling of instructions if the source registers
+            //aren't the destination of in-progress instructions.
+            if(~source_regs_in_use) begin
+                if(alu_type & ~alu1_busy) begin
+                    alu1_en <= 1;
+                    rd_out_rn <= Rd_rn;
 
-            if(alu_type & ~alu1_busy) begin
-                alu1_en <= 1;
-                rd_out_rn <= Rd_rn;
-                rd_out_rn_en <= 1;
+                end else if(alu_type & ~alu2_busy) begin
+                    alu2_en <= 1;
+                    rd_out_rn <= Rd_rn;
 
-            end else if(alu_type & ~alu2_busy) begin
-                alu2_en <= 1;
-                rd_out_rn <= Rd_rn;
-                rd_out_rn_en <= 1;
+                end else if(advint_type & ~advint_busy) begin
+                    advint_en <= 1;
+                    rd_out_rn <= Rd_rn;
+                    rd2_out_rn <= Rd2_rn;
 
-            end else if(advint_type & ~advint_busy) begin
-                advint_en <= 1;
-                rd_out_rn <= Rd_rn;
-                rd2_out_rn <= Rd2_rn;
-                rd_out_rn_en <= 1;
-                rd2_out_rn_en <= 1;
+                end else if(memunit_type & ~memunit_busy) begin
+                    memunit_en <= 1;
+                    rd_out_rn <= Rd_rn;
 
-            end else if(memunit_type & ~memunit_busy) begin
-                memunit_en <= 1;
-                rd_out_rn <= Rd_rn;
-                rd_out_rn_en <= 1;
-
-            end else if(branch_type & ~branch_busy) begin
-                branch_en <= 1;
-                rd_out_rn <= Rd_rn;
-                rd_out_rn_en <= 1;
+                end else if(branch_type & ~branch_busy) begin
+                    branch_en <= 1;
+                    rd_out_rn <= Rd_rn;
+                end
             end
         end
     end

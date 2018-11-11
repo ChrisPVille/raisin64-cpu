@@ -23,12 +23,22 @@ module pipeline(
     wire[5:0] de_rs2_rn;
     wire[55:0] de_imm_data;
 
+    wire de_load_rs1, de_load_rs1_rs2, de_load_rs1_rd;
+
     decode decode1(
         .clk(clk), .rst_n(rst_n), .instIn(fe_inst), .advance16(fe_advance16),
         .advance32(fe_advance32), .advance64(fe_advance64), .type(de_type),
         .unit(de_unit), .op(de_op), .rs1_rn(de_rs1_rn), .rs2_rn(de_rs2_rn),
-        .rd_rn(de_rd_rn), .rd2_rn(de_rd2_rn), .imm_data(de_imm_data)
+        .rd_rn(de_rd_rn), .rd2_rn(de_rd2_rn), .imm_data(de_imm_data),
+        .load_rs1(de_load_rs1), .load_rs1_rs2(de_load_rs1_rs2),
+        .load_rs1_rd(de_load_rs1_rd)
         );
+
+    wire de_r1_rn, de_r2_rn;
+    assign de_r1_rn = (de_load_rs1|de_load_rs1_rs2|de_load_rs1_rd) ? de_rs1_rn : 0;
+    assign de_r2_rn = de_load_rs1_rd ? de_rd_rn :
+                      de_load_rs1_rs2 ? de_rs2_rn :
+                      0;
 
     ////////// REG FILE  //////////
     //Concurrent with Schedule phase
@@ -43,26 +53,14 @@ module pipeline(
     //and written to during commit.
     regfile regfile1(
         .clk(clk), .rst_n(rst_n), .w_data(rf_writeback), .r1_data(rf_data1),
-        .r2_data(rf_data2), .r1_rn(de_rs1_rn), .r2_rn(de_rs2_rn),
+        .r2_data(rf_data2), .r1_rn(de_r1_rn), .r2_rn(de_r2_rn),
         .w_rn(rf_writeback_rn), .w_en(rf_writeback_en)
         );
 
     ////////// SCHEDULE  //////////
     //Concurrent with Register File
 
-    //Delay the relevant decode data into the schedule phase
-    reg[55:0] sc_imm_data;
-    reg sc_type;
-    always @(posedge clk or negedge rst_n)
-    begin
-        if(~rst_n) begin
-            sc_type <= 0;
-            sc_imm_data <= 56'h0;
-        else begin
-            sc_type <= de_type;
-            sc_imm_data <= de_imm_data;
-        end
-    end
+    wire sc_instIssued;
 
     wire sc_alu1_en;
     wire sc_alu2_en;
@@ -75,31 +73,77 @@ module pipeline(
     wire sc_memunit_busy;
     wire sc_branch_busy;
 
-    pr_table #(
-        NUM_READ_PORTS = 2
-        ) pr_table1 (
-        .clk(clk), .rst_n(rst_n), .reg_busy(), .busy_rn(),
-        .busy_en, .free_rn[0](), .free_en[0](), .free_rn[1](),
-        .free_en[1]()
+    wire[5:0] sc_rd_rn;
+    wire[5:0] sc_rd2_rn;
+
+    wire[63:0] sc_busy_regs;
+
+    wire[5:0] sc_free_rn[0:1];
+    wire sc_free_rn_en[0:1];
+
+    pr_table pr_table1 (
+        .clk(clk), .rst_n(rst_n), .reg_busy(sc_busy_regs),
+        .busy_rn[0](de_r1_rn), .busy_en[0](sc_instIssued),
+        .busy_rn[1](de_r2_rn), .busy_en[1](sc_instIssued),
+        .free_rn(sc_free_rn), .free_en(sc_free_rn_en),
+//        .free_rn[1](sc_free_rn[1]), .free_en[1](sc_free_rn_en[1])
         );
 
     schedule schedule1(
-        .clk(clk), .rst_n(rst_n), .type(de_type), .unit(de_unit),
-        .rd_in_rn(), .rd2_in_rn(), .rd_in_rn_en(), .rd2_in_rn_en(),
-        .instIssued(), .reg_busy(), .rd_out_rn(),
-        .rd2_out_rn(), .alu1_en(), .alu2_en(), .advint_en(),
-        .memunit_en(), .branch_en(), alu1_busy(sc_alu1_busy), .alu2_busy(), 
-        .advint_busy(), .memunit_busy(), .branch_busy()
+        .clk(clk), .rst_n(rst_n),
+        .type(de_type), .unit(de_unit),
+        .r1_in_rn(de_r1_rn), .r2_in_rn(de_r2_rn),
+        .rd_in_rn(de_rd_rn), .rd2_in_rn(de_rd2_rn),
+        .instIssued(sc_instIssued), .reg_busy(sc_busy_regs),
+        .rd_out_rn(sc_rd_rn), .rd2_out_rn(sc_rd2_rn),
+
+        .alu1_en(sc_alu1_en), .alu2_en(sc_alu2_en), .advint_en(sc_advint_en),
+        .memunit_en(sc_memunit_en), .branch_en(sc_branch_en),
+
+        .alu1_busy(sc_alu1_busy), .alu2_busy(sc_alu2_busy),
+        .advint_busy(sc_advint_busy), .memunit_busy(sc_memunit_busy),
+        .branch_busy(sc_branch_busy)
         );
 
+    //Delay the relevant decode data used by execution through the schedule phase
+    reg sc_type;
+    reg[2:0] sc_unit;
+    reg[1:0] sc_op;
+    reg[55:0] sc_imm_data;
+
+    always @(posedge clk or negedge rst_n)
+    begin
+        if(~rst_n) begin
+            sc_type <= 0;
+            sc_unit <= 3'h0;
+            sc_op <= 2'h0;
+            sc_imm_data <= 56'h0;
+        else begin
+            sc_type <= de_type;
+            sc_unit <= de_unit;
+            sc_op <= de_op;
+            sc_imm_data <= de_imm_data;
+        end
+    end
+
     //////////  EXECUTE  //////////
+
+    wire[63:0] ex_alu1_result;
+    wire[63:0] ex_alu2_result;
+
     ex_alu ex_alu1(
-        .clk(clk), .rst_n(rst_n), .in1(rf_data1), .in2(sc_type ? sc_imm_data[31:0] : rf_data2), .out(),
-        .ex_enable(sc_alu1_en), .ex_busy(sc_alu1_busy), .rd_in_rn(), .unit(),
-        .op(), .rd_out_rn(), .stall()
+        .clk(clk), .rst_n(rst_n), .in1(rf_data1), .in2(sc_type ? sc_imm_data[31:0] : rf_data2), .out(ex_alu1_result),
+        .ex_enable(sc_alu1_en), .ex_busy(sc_alu1_busy), .rd_in_rn(sc_rd_rn), .unit(sc_unit),
+        .op(sc_op), .rd_out_rn(), .stall()
+        );
+
+    ex_alu ex_alu2(
+        .clk(clk), .rst_n(rst_n), .in1(rf_data1), .in2(sc_type ? sc_imm_data[31:0] : rf_data2), .out(ex_alu2_result),
+        .ex_enable(sc_alu2_en), .ex_busy(sc_alu2_busy), .rd_in_rn(sc_rd_rn), .unit(sc_unit),
+        .op(sc_op), .rd_out_rn(), .stall()
         );
 
     //////////  COMMIT   //////////
-    
+
 
 endmodule
