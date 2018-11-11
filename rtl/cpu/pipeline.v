@@ -3,7 +3,15 @@
 module pipeline(
     //# {{clocks|Clocking}}
     input clk,
-    input rst_n
+    input rst_n,
+
+    //# {{data|Instruction Memory Bus}}
+    input[63:0] imem_addr,
+    input[63:0] imem_data,
+
+    //# {{control|Instruction Memory Bus Control}}
+    input imem_data_valid,
+    output imem_addr_valid
     );
 
     //////////  FETCH    //////////
@@ -11,6 +19,19 @@ module pipeline(
     wire fe_advance16;
     wire fe_advance32;
     wire fe_advance64;
+
+    fetch fetch1(
+        .clk(clk),
+        .rst_n(rst_n),
+        .imem_addr(imem_addr),
+        .imem_data(imem_data),
+        .imem_data_valid(imem_data_valid),
+        .imem_addr_valid(imem_addr_valid),
+        .instData(fe_inst),
+        .advance16(fe_advance16),
+        .advance32(fe_advance32),
+        .advance64(fe_advance64)
+    );
 
     //////////  DECODE   //////////
 
@@ -25,12 +46,15 @@ module pipeline(
 
     wire de_r1_rn, de_r2_rn;
 
+    wire de_allow_advance;
+
     decode decode1(
         .clk(clk), .rst_n(rst_n), .instIn(fe_inst), .advance16(fe_advance16),
         .advance32(fe_advance32), .advance64(fe_advance64), .type(de_type),
         .unit(de_unit), .op(de_op), .rs1_rn(de_rs1_rn), .rs2_rn(de_rs2_rn),
         .rd_rn(de_rd_rn), .rd2_rn(de_rd2_rn), .imm_data(de_imm_data),
         .r1_rn(de_r1_rn), .r2_rn(de_r2_rn),
+        .allow_advance(de_allow_advance)
         );
 
     ////////// REG FILE  //////////
@@ -53,8 +77,6 @@ module pipeline(
     ////////// SCHEDULE  //////////
     //Concurrent with Register File
 
-    wire sc_instIssued;
-
     wire sc_alu1_en;
     wire sc_alu2_en;
     wire sc_advint_en;
@@ -76,8 +98,8 @@ module pipeline(
 
     pr_table pr_table1 (
         .clk(clk), .rst_n(rst_n), .reg_busy(sc_busy_regs),
-        .busy_rn[0](de_r1_rn), .busy_en[0](sc_instIssued),
-        .busy_rn[1](de_r2_rn), .busy_en[1](sc_instIssued),
+        .busy_rn[0](de_r1_rn), .busy_en[0](de_allow_advance),
+        .busy_rn[1](de_r2_rn), .busy_en[1](de_allow_advance),
         .free_rn(sc_free_rn), .free_en(sc_free_rn_en),
 //        .free_rn[1](sc_free_rn[1]), .free_en[1](sc_free_rn_en[1])
         );
@@ -87,7 +109,7 @@ module pipeline(
         .type(de_type), .unit(de_unit),
         .r1_in_rn(de_r1_rn), .r2_in_rn(de_r2_rn),
         .rd_in_rn(de_rd_rn), .rd2_in_rn(de_rd2_rn),
-        .instIssued(sc_instIssued), .reg_busy(sc_busy_regs),
+        .instIssued(de_allow_advance), .reg_busy(sc_busy_regs),
         .rd_out_rn(sc_rd_rn), .rd2_out_rn(sc_rd2_rn),
 
         .alu1_en(sc_alu1_en), .alu2_en(sc_alu2_en), .advint_en(sc_advint_en),

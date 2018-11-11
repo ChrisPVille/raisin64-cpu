@@ -26,6 +26,10 @@ module decode(
     //Indicates which registers are loaded for this instruction
     output r1_rn,
     output r2_rn,
+
+    //# {{control|Scheduler Feedback}}
+    input allow_advance
+
     );
 
     wire[63:0] canonInst;
@@ -39,9 +43,9 @@ module decode(
         .instIn(instIn), .badOpcode(badOpcode)
         );
 
-    assign advance16 = ~instIn[63];
-    assign advance32 = (instIn[63:62] == 2'b10);
-    assign advance64 = (instIn[63:62] == 2'b11);
+    assign advance16 = allow_advance & ~instIn[63];
+    assign advance32 = allow_advance & (instIn[63:62] == 2'b10);
+    assign advance64 = allow_advance & (instIn[63:62] == 2'b11);
 
     reg load_rs1, load_rs1_rs2, load_rs1_rd;
 
