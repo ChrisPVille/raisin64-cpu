@@ -38,7 +38,7 @@ module raisin64 (
     assign imem_data_ready = 1;
 
     ram #(
-        .NUM_BYTES(64)
+        .NUM_BYTES(256)
         ) imem (
         .clk(clk),
         .we(1'b0), .cs(imem_addr_valid),
