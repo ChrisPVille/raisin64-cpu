@@ -1,8 +1,9 @@
 module raisin64_tb();
 
     reg clk, rst_n;
+    defparam cpu.imem.INIT_FILE = "../support/imem.hex";
 
-    raisin64 raisin64_1(
+    raisin64 cpu (
         .clk(clk),
         .rst_n(rst_n)
         );
