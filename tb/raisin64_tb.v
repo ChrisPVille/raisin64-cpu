@@ -4,7 +4,7 @@ module raisin64_tb();
 
     raisin64 raisin64_1(
         .clk(clk),
-        .rst_n(rst_n),
+        .rst_n(rst_n)
         );
 
     initial begin

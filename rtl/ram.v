@@ -28,14 +28,14 @@ end
 always @(posedge clk) begin
     if(cs) begin
         data_out[63:56] <= ram[addr];
-        data_out[55:48: <= ram[addr+1];
+        data_out[55:48] <= ram[addr+1];
         data_out[47:40] <= ram[addr+2];
         data_out[39:32] <= ram[addr+3];
         data_out[31:24] <= ram[addr+4];
         data_out[23:16] <= ram[addr+5];
         data_out[15:8] <= ram[addr+6];
         data_out[7:0] <= ram[addr+7];
-    else data_out <= 64'h0;
+    end else data_out <= 64'h0;
 end
 
 //Populate our program memory with the user-provided hex file

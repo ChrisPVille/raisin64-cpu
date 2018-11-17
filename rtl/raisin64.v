@@ -5,7 +5,7 @@
 module raisin64 (
     //# {{clocks|Clocking}}
     input clk,
-    input rst_n,
+    input rst_n
 
     //# {{data|Memory Interface}}
     //input[63:0] mem_din,
