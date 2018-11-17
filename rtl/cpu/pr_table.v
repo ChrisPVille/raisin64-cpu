@@ -11,13 +11,13 @@ module pr_table(
     output reg[63:0] reg_busy,
 
     //# {{control|Control Signals}}
-    input[6:0] busy0_rn,
-    input[6:0] busy1_rn,
+    input[5:0] busy0_rn,
+    input[5:0] busy1_rn,
     input busy0_en,
     input busy1_en,
 
-    input[6:0] free0_rn, //TODO Two free ports aren't necessary if we only have one register file write port
-    input[6:0] free1_rn
+    input[5:0] free0_rn, //TODO Two free ports aren't necessary if we only have one register file write port
+    input[5:0] free1_rn
     );
 
     integer i;

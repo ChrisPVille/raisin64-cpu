@@ -21,7 +21,7 @@ module decode(
     output reg[5:0] rs2_rn,
     output reg[5:0] rd_rn,
     output reg[5:0] rd2_rn,
-    output reg[56:0] imm_data,
+    output reg[55:0] imm_data,
 
     //Indicates which registers are loaded for this instruction
     output[5:0] r1_rn,

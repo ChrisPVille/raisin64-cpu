@@ -5,7 +5,7 @@ module fetch(
     input rst_n,
 
     //# {{data|Memory Bus}}
-    input[63:0] imem_addr,
+    output[63:0] imem_addr,
     input[63:0] imem_data,
 
     //# {{control|Memory Bus Control}}

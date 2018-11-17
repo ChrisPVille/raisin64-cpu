@@ -42,7 +42,7 @@ module raisin64 (
         .INIT_FILE("~/git/raisin64-cpu/support/imem.hex")
         ) imem (
         .clk(clk),
-        .we(0), .cs(imem_addr_valid),
+        .we(1'b0), .cs(imem_addr_valid),
         .addr(imem_addr),
         .data_in(64'h0),
         .data_out(imem_data)

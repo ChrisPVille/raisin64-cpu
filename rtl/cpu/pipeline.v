@@ -6,7 +6,7 @@ module pipeline(
     input rst_n,
 
     //# {{data|Instruction Memory Bus}}
-    input[63:0] imem_addr,
+    output[63:0] imem_addr,
     input[63:0] imem_data,
 
     //# {{control|Instruction Memory Bus Control}}
