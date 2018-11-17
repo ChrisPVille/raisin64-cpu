@@ -1,7 +1,7 @@
 module raisin64_tb();
 
     reg clk, rst_n;
-    defparam cpu.imem.INIT_FILE = "imem.hex";
+    defparam cpu.imem.INIT_FILE = "/home/christopher/git/raisin64-cpu/support/imem.hex";
 
     raisin64 cpu (
         .clk(clk),
