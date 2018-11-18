@@ -8,8 +8,8 @@ module regfile(
 
     //# {{data|Register Interface}}
     input[63:0] w_data,
-    output reg[63:0] r1_data,
-    output reg[63:0] r2_data,
+    output[63:0] r1_data,
+    output[63:0] r2_data,
 
     //# {{control|Register Control}}
     input[5:0] r1_rn,
@@ -21,7 +21,12 @@ module regfile(
     );
 
     reg[63:0] file[1:63];
+    reg[63:0] r1_data_pre, r2_data_pre;
     integer i;
+
+    //Allow data forwarding via bypass of the register write, enabling data to be read from the file the same cycle it is "written"
+    assign r1_data = (w_rn==r1_rn && w_en) ? w_data : r1_data_pre;
+    assign r2_data = (w_rn==r2_rn && w_en) ? w_data : r2_data_pre;
 
     //TODO if place-route isn't smart enough to figure it out and use block ram, have two register files with write ports cross connected so we get "two" read ports on a clock cycle using multiple simple dual-port rams.
     always @(posedge clk or negedge rst_n)
@@ -35,15 +40,15 @@ module regfile(
 
     always @(posedge clk or negedge rst_n)
     begin
-        if(~rst_n) r1_data <= 64'h0;
-        else if(r1_rn==6'h0) r1_data <= 64'h0;
-        else r1_data <= file[r1_rn];
+        if(~rst_n) r1_data_pre <= 64'h0;
+        else if(r1_rn==6'h0) r1_data_pre <= 64'h0;
+        else r1_data_pre <= file[r1_rn];
     end
 
     always @(posedge clk or negedge rst_n)
     begin
-        if(~rst_n) r2_data <= 64'h0;
-        else if(r2_rn==6'h0) r2_data <= 64'h0;
-        else r2_data <= file[r2_rn];
+        if(~rst_n) r2_data_pre <= 64'h0;
+        else if(r2_rn==6'h0) r2_data_pre <= 64'h0;
+        else r2_data_pre <= file[r2_rn];
     end
 endmodule

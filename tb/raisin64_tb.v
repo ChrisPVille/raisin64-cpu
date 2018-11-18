@@ -1,9 +1,9 @@
-`timescale 1ns/1ps
+`timescale 1ns/1ns
 
 module raisin64_tb();
 
     reg clk, rst_n;
-    defparam cpu.imem.INIT_FILE = "/home/christopher/git/raisin64-cpu/support/imem.hex";
+    defparam cpu.imem.INIT_FILE = "/home/christopher/git/raisin64-nexys4ddr/cpu/support/imem.hex";
 
     raisin64 cpu (
         .clk(clk),
@@ -24,9 +24,9 @@ module raisin64_tb();
     begin
         rst_n = 0;
 
-        #5 rst_n = 1;
+        #15 rst_n = 1;
 
-        #3000 $finish;
+        #400 $finish;
     end
 
 endmodule

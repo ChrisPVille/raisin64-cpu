@@ -20,22 +20,37 @@ module pr_table(
     input[5:0] free1_rn
     );
 
+    reg[63:0] reg_busy_pre;
+
     integer i;
+
+    always @(*)
+    begin
+        reg_busy[0] = 0;
+        for(i = 1; i < 64; i = i+1)
+        begin
+            reg_busy[i] = (busy0_rn==i && busy0_en) ? 1 :
+                           (busy1_rn==i && busy1_en) ? 1 :
+                           (free0_rn==i) ? 0 :
+                           (free1_rn==i) ? 0 :
+                           reg_busy_pre[i];
+        end
+    end
 
     always @(posedge clk or negedge rst_n)
     begin
-        if(~rst_n) reg_busy <= 64'h0;
+        if(~rst_n) reg_busy_pre <= 64'h0;
         else begin
             if(busy0_en & |busy0_rn) begin
-                reg_busy[busy0_rn] <= 1;
+                reg_busy_pre[busy0_rn] <= 1;
             end
 
             if(busy1_en & |busy1_rn) begin
-                reg_busy[busy1_rn] <= 1;
+                reg_busy_pre[busy1_rn] <= 1;
             end
 
-            reg_busy[free0_rn] <= 0;
-            reg_busy[free1_rn] <= 0;
+            reg_busy_pre[free0_rn] <= 0;
+            reg_busy_pre[free1_rn] <= 0;
         end
     end
 

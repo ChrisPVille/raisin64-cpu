@@ -45,7 +45,7 @@ module ex_alu(
     end
 
     //As this is a one-cycle stage, busy is simple
-    assign ex_busy = stall | ex_enable;
+    assign ex_busy = stall;
 
     ex_alu_s1 ex_alu_s1_1(
         .in1(in1), .in2(in2), .out(out_pre), .enable(ex_enable),

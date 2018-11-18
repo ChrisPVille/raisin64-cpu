@@ -24,8 +24,8 @@ module decode(
     output reg[55:0] imm_data,
 
     //Indicates which registers are loaded for this instruction
-    output[5:0] r1_rn,
-    output[5:0] r2_rn,
+    output reg[5:0] r1_rn,
+    output reg[5:0] r2_rn,
 
     //# {{control|Scheduler Feedback}}
     input allow_advance
@@ -49,34 +49,28 @@ module decode(
 
     reg load_rs1, load_rs1_rs2, load_rs1_rd;
 
-    always @(posedge clk or negedge rst_n)
-    begin
-        if(~rst_n) begin
-            load_rs1 <= 0;
-            load_rs1_rs2 <= 0;
-            load_rs1_rd <= 0;
-        end else begin
-            if(~canonInst[61]) begin //R-Type
-                if(canonInst[60:58] < 3'h5 | //Units 0-4
-                  (&canonInst[60:58] && canonInst[57:56] == 2'h1)) //F* Inst
-                    load_rs1_rs2 <= 1;
-                else if(&canonInst[60:58] & canonInst[57]) //JAL, J
-                    load_rs1 <= 1;
-            end else begin //I-Type
-                if(canonInst[60:58] < 3'h5 | //Units 0-4
-                  canonInst[60:58] == 3'h5 && |canonInst[57:56]) //Unit 5 except LUI
-                    load_rs1 <= 1;
-                else if(canonInst[60:58] == 3'h6 | //Unit 6
-                  &canonInst[60:58] & ~canonInst[57]) //BEQ, BEQAL
-                    load_rs1_rd <= 1;
+    always @(*) begin
+        load_rs1 = 0;
+        load_rs1_rs2 = 0;
+        load_rs1_rd = 0;
+
+        if(~canonInst[61]) begin //R-Type
+            if(canonInst[60:58] < 3'h5 || //Units 0-4
+              (&canonInst[60:58] && canonInst[57:56] == 2'h1)) begin //F* Inst
+                load_rs1_rs2 = 1;
+            end else if(&canonInst[60:58] & canonInst[57]) begin //JAL, J
+                load_rs1 = 1;
+            end
+        end else begin //I-Type
+            if(canonInst[60:58] < 3'h5 || //Units 0-4
+              canonInst[60:58] == 3'h5 && |canonInst[57:56]) begin //Unit 5 except LUI
+                load_rs1 = 1;
+            end else if(canonInst[60:58] == 3'h6 | //Unit 6
+              &canonInst[60:58] & ~canonInst[57]) begin //BEQ, BEQAL
+                load_rs1_rd = 1;
             end
         end
     end
-
-    assign r1_rn = (load_rs1|load_rs1_rs2|load_rs1_rd) ? canonInst[43:38] : 6'h0;
-    assign r2_rn = load_rs1_rd ? canonInst[55:50] :
-                      load_rs1_rs2 ? canonInst[37:32] :
-                      6'h0;
 
     always @(posedge clk or negedge rst_n)
     begin
@@ -89,6 +83,8 @@ module decode(
             rd_rn <= 0;
             rd2_rn <= 0;
             imm_data <= 0;
+            r1_rn <= 0;
+            r2_rn <= 0;
         end else begin
             type <= canonInst[61];
             unit <= canonInst[60:58];
@@ -98,6 +94,11 @@ module decode(
             rd_rn <= canonInst[55:50];
             rd2_rn <= canonInst[49:44];
             imm_data <= canonInst[55:0];
+
+            r1_rn <= (load_rs1|load_rs1_rs2|load_rs1_rd) ? canonInst[43:38] : 6'h0;
+            r2_rn <= load_rs1_rd ? canonInst[55:50] :
+                                   load_rs1_rs2 ? canonInst[37:32] :
+                                   6'h0;
         end
     end
 
