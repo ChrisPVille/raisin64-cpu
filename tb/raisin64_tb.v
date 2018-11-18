@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module raisin64_tb();
 
     reg clk, rst_n;
@@ -9,7 +11,7 @@ module raisin64_tb();
         );
 
     initial begin
-        clk = 0;
+        clk = 1;
         forever #5 clk = ~clk;
     end
 
@@ -22,7 +24,7 @@ module raisin64_tb();
     begin
         rst_n = 0;
 
-        #30 rst_n = 1;
+        #5 rst_n = 1;
 
         #3000 $finish;
     end
