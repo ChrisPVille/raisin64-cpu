@@ -26,7 +26,7 @@ module raisin64 (
     wire[63:0] imem_addr;
     wire[63:0] imem_data;
 
-    pipeline my_pipeline(
+    pipeline pipeline1(
         .clk(clk),
         .rst_n(rst_n),
         .imem_addr(imem_addr),

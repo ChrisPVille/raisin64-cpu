@@ -64,6 +64,12 @@ module schedule(
         end else begin
             //Only allow the scheduling of instructions if the source registers
             //aren't the destination of in-progress instructions.
+            alu1_en <= 0;
+            alu2_en <= 0;
+            advint_en <= 0;
+            memunit_en <= 0;
+            branch_en <= 0;
+
             if(~source_regs_in_use) begin
                 if(alu_type & ~alu1_busy) begin
                     alu1_en <= 1;
