@@ -16,9 +16,11 @@ module schedule(
 
     //# {{control|Decoded Instruction Control}}
     output instIssued,
+    output reg stall,
 
     //# {{control|Register Control}}
-    input[63:0] reg_busy,
+    input[5:0] reg1_finished,
+    input[5:0] reg2_finished,
 
     //# {{data|Execution Units Register Data}}
     output reg[5:0] rd_out_rn,
@@ -36,8 +38,9 @@ module schedule(
     input advint_busy,
     input memunit_busy,
     input branch_busy
-
     );
+
+    reg[63:0] reg_busy;
 
     assign instIssued = alu1_en | alu2_en | advint_en | memunit_en | branch_en;
 
@@ -47,8 +50,37 @@ module schedule(
     assign memunit_type = type && (unit==3'h4 | unit==3'h5 | unit==3'h6);
     assign branch_type = unit==3'h7;
 
-    wire source_regs_in_use;
-    assign source_regs_in_use = reg_busy[r1_in_rn] | reg_busy[r2_in_rn];
+    reg start_stall;
+    always @(posedge clk or negedge rst_n)
+    begin
+        if(~rst_n) start_stall <= 0;
+        else start_stall <= 1;
+    end
+
+    always @(*)
+    begin
+        stall = 0;
+        //We are starting up and wish to stall while the decode pipeline fills
+        if(~start_stall) stall = 1;
+
+        //The register was previously busy
+        else if(reg_busy[r1_in_rn] && r1_in_rn!=reg1_finished) stall = 1;
+        else if(reg_busy[r2_in_rn] && r2_in_rn!=reg2_finished) stall = 1;
+
+        //We just issued something to an execution unit
+        else if(instIssued) begin
+            //The incoming source register is non-zero
+            if(|r1_in_rn) begin
+                //And it matches the previous destination register number.  We
+                //will stall here until it is picked up by reg_busy next cycle
+                if(rd_out_rn==r1_in_rn) stall = 1;
+                else if(rd_out_rn==r2_in_rn) stall = 1;
+            end else if(|r2_in_rn) begin
+                if(rd2_out_rn==r1_in_rn) stall = 1;
+                else if(rd2_out_rn==r2_in_rn) stall = 1;
+            end
+        end
+    end
 
     always @(posedge clk or negedge rst_n)
     begin
@@ -60,6 +92,7 @@ module schedule(
             branch_en <= 0;
             rd_out_rn <= 6'h0;
             rd2_out_rn <= 6'h0;
+            reg_busy <= 64'h0;
 
         end else begin
             //Only allow the scheduling of instructions if the source registers
@@ -70,27 +103,39 @@ module schedule(
             memunit_en <= 0;
             branch_en <= 0;
 
-            if(~source_regs_in_use) begin
+            reg_busy[reg1_finished] <= 0;
+            reg_busy[reg2_finished] <= 0;
+
+            rd_out_rn <= 6'h0;
+            rd2_out_rn <= 6'h0;
+
+            if(~stall) begin
                 if(alu_type & ~alu1_busy) begin
                     alu1_en <= 1;
                     rd_out_rn <= rd_in_rn;
+                    if(|rd_in_rn) reg_busy[rd_in_rn] <= 1;
 
                 end else if(alu_type & ~alu2_busy) begin
                     alu2_en <= 1;
                     rd_out_rn <= rd_in_rn;
+                    if(|rd_in_rn) reg_busy[rd_in_rn] <= 1;
 
                 end else if(advint_type & ~advint_busy) begin
                     advint_en <= 1;
                     rd_out_rn <= rd_in_rn;
                     rd2_out_rn <= rd2_in_rn;
+                    if(|rd_in_rn) reg_busy[rd_in_rn] <= 1;
+                    if(|rd2_in_rn) reg_busy[rd2_in_rn] <= 1;
 
                 end else if(memunit_type & ~memunit_busy) begin
                     memunit_en <= 1;
                     rd_out_rn <= rd_in_rn;
+                    if(|rd_in_rn) reg_busy[rd_in_rn] <= 1;
 
                 end else if(branch_type & ~branch_busy) begin
                     branch_en <= 1;
                     rd_out_rn <= rd_in_rn;
+                    if(|rd_in_rn) reg_busy[rd_in_rn] <= 1; //TODO Only BAL and then only 63
                 end
             end
         end

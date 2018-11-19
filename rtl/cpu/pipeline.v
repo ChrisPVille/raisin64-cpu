@@ -47,7 +47,7 @@ module pipeline(
     wire[5:0] de_r1_rn;
     wire[5:0] de_r2_rn;
 
-    wire de_allow_advance;
+    wire de_stall;
 
     decode decode1(
         .clk(clk), .rst_n(rst_n), .instIn(fe_inst), .advance16(fe_advance16),
@@ -55,7 +55,7 @@ module pipeline(
         .unit(de_unit), .op(de_op), .rs1_rn(de_rs1_rn), .rs2_rn(de_rs2_rn),
         .rd_rn(de_rd_rn), .rd2_rn(de_rd2_rn), .imm_data(de_imm_data),
         .r1_rn(de_r1_rn), .r2_rn(de_r2_rn),
-        .allow_advance(de_allow_advance)
+        .allow_advance(~de_stall)
         );
 
     ////////// REG FILE  //////////
@@ -92,22 +92,15 @@ module pipeline(
     wire[5:0] sc_rd_rn;
     wire[5:0] sc_rd2_rn;
 
-    wire[63:0] sc_busy_regs;
-
-    pr_table pr_table1 (
-        .clk(clk), .rst_n(rst_n), .reg_busy(sc_busy_regs),
-        .busy0_rn(de_r1_rn), .busy0_en(de_allow_advance),
-        .busy1_rn(de_r2_rn), .busy1_en(de_allow_advance),
-        .free0_rn(rf_writeback_rn), .free1_rn(6'h0)
-        );
-
     schedule schedule1(
         .clk(clk), .rst_n(rst_n),
         .type(de_type), .unit(de_unit),
         .r1_in_rn(de_r1_rn), .r2_in_rn(de_r2_rn),
         .rd_in_rn(de_rd_rn), .rd2_in_rn(de_rd2_rn),
-        .instIssued(de_allow_advance), .reg_busy(sc_busy_regs),
+        .stall(de_stall),
         .rd_out_rn(sc_rd_rn), .rd2_out_rn(sc_rd2_rn),
+
+        .reg1_finished(rf_writeback_rn), .reg2_finished(6'h0),
 
         .alu1_en(sc_alu1_en), .alu2_en(sc_alu2_en), .advint_en(sc_advint_en),
         .memunit_en(sc_memunit_en), .branch_en(sc_branch_en),

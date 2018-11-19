@@ -43,9 +43,9 @@ module decode(
         .instIn(instIn), .badOpcode(badOpcode)
         );
 
-    assign advance16 = allow_advance & ~instIn[63];
-    assign advance32 = allow_advance & (instIn[63:62] == 2'b10);
-    assign advance64 = allow_advance & (instIn[63:62] == 2'b11);
+    assign advance16 = allow_advance && ~instIn[63];
+    assign advance32 = allow_advance && (instIn[63:62] == 2'b10);
+    assign advance64 = allow_advance && (instIn[63:62] == 2'b11);
 
     reg load_rs1, load_rs1_rs2, load_rs1_rd;
 
@@ -86,19 +86,21 @@ module decode(
             r1_rn <= 0;
             r2_rn <= 0;
         end else begin
-            type <= canonInst[61];
-            unit <= canonInst[60:58];
-            op <= canonInst[57:56];
-            rs1_rn <= canonInst[43:38];
-            rs2_rn <= canonInst[37:32];
-            rd_rn <= canonInst[55:50];
-            rd2_rn <= canonInst[49:44];
-            imm_data <= canonInst[55:0];
+            if(allow_advance) begin
+                type <= canonInst[61];
+                unit <= canonInst[60:58];
+                op <= canonInst[57:56];
+                rs1_rn <= canonInst[43:38];
+                rs2_rn <= canonInst[37:32];
+                rd_rn <= canonInst[55:50];
+                rd2_rn <= canonInst[49:44];
+                imm_data <= canonInst[55:0];
 
-            r1_rn <= (load_rs1|load_rs1_rs2|load_rs1_rd) ? canonInst[43:38] : 6'h0;
-            r2_rn <= load_rs1_rd ? canonInst[55:50] :
-                                   load_rs1_rs2 ? canonInst[37:32] :
-                                   6'h0;
+                r1_rn <= (load_rs1|load_rs1_rs2|load_rs1_rd) ? canonInst[43:38] : 6'h0;
+                r2_rn <= load_rs1_rd ? canonInst[55:50] :
+                                       load_rs1_rs2 ? canonInst[37:32] :
+                                       6'h0;
+            end
         end
     end
 
