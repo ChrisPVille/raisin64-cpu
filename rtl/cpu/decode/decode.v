@@ -28,7 +28,7 @@ module decode(
     output reg[5:0] r2_rn,
 
     //# {{control|Scheduler Feedback}}
-    input allow_advance
+    input stall
 
     );
 
@@ -43,9 +43,9 @@ module decode(
         .instIn(instIn), .badOpcode(badOpcode)
         );
 
-    assign advance16 = allow_advance && ~instIn[63];
-    assign advance32 = allow_advance && (instIn[63:62] == 2'b10);
-    assign advance64 = allow_advance && (instIn[63:62] == 2'b11);
+    assign advance16 = ~stall && ~instIn[63];
+    assign advance32 = ~stall && (instIn[63:62] == 2'b10);
+    assign advance64 = ~stall && (instIn[63:62] == 2'b11);
 
     reg load_rs1, load_rs1_rs2, load_rs1_rd;
 
@@ -86,7 +86,7 @@ module decode(
             r1_rn <= 0;
             r2_rn <= 0;
         end else begin
-            if(allow_advance) begin
+            if(~stall) begin
                 type <= canonInst[61];
                 unit <= canonInst[60:58];
                 op <= canonInst[57:56];
