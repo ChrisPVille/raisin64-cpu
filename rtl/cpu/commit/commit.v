@@ -41,20 +41,16 @@ module commit(
     assign memunit_stall = 0;
     assign branch_stall = 0;
 
-    always @(posedge clk or negedge rst_n)
+    always @(*)
     begin
-        if(~rst_n) begin
-            write_data <= 64'h0;
-            write_rn <= 6'h0;
-        end else begin
-            write_rn <= 6'h0;
-            if(alu1_valid) begin
-                write_data <= alu1_result;
-                write_rn <= alu1_rn;
-            end else if(alu2_valid) begin
-                write_data <= alu2_result;
-                write_rn <= alu2_rn;
-            end
+        write_data = 64'h0;
+        write_rn = 6'h0;
+        if(alu1_valid) begin
+            write_data = alu1_result;
+            write_rn = alu1_rn;
+        end else if(alu2_valid) begin
+            write_data = alu2_result;
+            write_rn = alu2_rn;
         end
     end
 

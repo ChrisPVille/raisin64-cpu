@@ -75,7 +75,8 @@ module schedule(
                 //will stall here until it is picked up by reg_busy next cycle
                 if(rd_out_rn==r1_in_rn) stall = 1;
                 else if(rd_out_rn==r2_in_rn) stall = 1;
-            end else if(|r2_in_rn) begin
+            end
+            if(|r2_in_rn) begin
                 if(rd2_out_rn==r1_in_rn) stall = 1;
                 else if(rd2_out_rn==r2_in_rn) stall = 1;
             end

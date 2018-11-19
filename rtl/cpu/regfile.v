@@ -34,7 +34,7 @@ module regfile(
         if(~rst_n) begin
             for(i = 1; i<64; i = i+1) file[i] <= 64'h0;
         end else begin
-            if(w_en && w_rn!=6'h0) file[w_rn] <= w_data; 
+            if(w_en && w_rn!=6'h0) file[w_rn] <= w_data;
         end
     end
 
@@ -42,13 +42,13 @@ module regfile(
     begin
         if(~rst_n) r1_data_pre <= 64'h0;
         else if(r1_rn==6'h0) r1_data_pre <= 64'h0;
-        else r1_data_pre <= file[r1_rn];
+        else r1_data_pre <= (w_rn==r1_rn && w_en) ? w_data : file[r1_rn];
     end
 
     always @(posedge clk or negedge rst_n)
     begin
         if(~rst_n) r2_data_pre <= 64'h0;
         else if(r2_rn==6'h0) r2_data_pre <= 64'h0;
-        else r2_data_pre <= file[r2_rn];
+        else r2_data_pre <= (w_rn==r2_rn && w_en) ? w_data : file[r2_rn];
     end
 endmodule
