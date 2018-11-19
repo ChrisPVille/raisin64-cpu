@@ -46,6 +46,8 @@ module pipeline(
     wire[5:0] de_rs2_rn;
     wire[55:0] de_imm_data;
 
+    wire de_willIssue;
+
     wire[5:0] de_r1_rn;
     wire[5:0] de_r2_rn;
 
@@ -55,7 +57,7 @@ module pipeline(
         .unit(de_unit), .op(de_op), .rs1_rn(de_rs1_rn), .rs2_rn(de_rs2_rn),
         .rd_rn(de_rd_rn), .rd2_rn(de_rd2_rn), .imm_data(de_imm_data),
         .r1_rn(de_r1_rn), .r2_rn(de_r2_rn),
-        .stall(stall)
+        .stall(stall | ~de_willIssue)
         );
 
     ////////// REG FILE  //////////
@@ -97,7 +99,7 @@ module pipeline(
         .type(de_type), .unit(de_unit),
         .r1_in_rn(de_r1_rn), .r2_in_rn(de_r2_rn),
         .rd_in_rn(de_rd_rn), .rd2_in_rn(de_rd2_rn),
-        .stall(stall),
+        .stall(stall), .willIssue(de_willIssue),
         .rd_out_rn(sc_rd_rn), .rd2_out_rn(sc_rd2_rn),
 
         .reg1_finished(rf_writeback_rn), .reg2_finished(6'h0),

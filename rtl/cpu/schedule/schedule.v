@@ -15,7 +15,7 @@ module schedule(
     input[5:0] rd2_in_rn,
 
     //# {{control|Decoded Instruction Control}}
-    output instIssued,
+    output reg willIssue,
     output reg stall,
 
     //# {{control|Register Control}}
@@ -42,8 +42,6 @@ module schedule(
 
     reg[63:0] reg_busy;
 
-    assign instIssued = alu1_en | alu2_en | advint_en | memunit_en | branch_en;
-
     wire alu_type, advint_type, memunit_type, branch_type;
     assign alu_type = ~unit[2];
     assign advint_type = ~type && unit==3'h4;
@@ -57,6 +55,9 @@ module schedule(
         else start_stall <= 1;
     end
 
+    wire instIssued;
+    assign instIssued = alu1_en | alu2_en | advint_en | memunit_en | branch_en;
+
     always @(*)
     begin
         stall = 0;
@@ -64,8 +65,8 @@ module schedule(
         if(~start_stall) stall = 1;
 
         //The register was previously busy
-        else if(reg_busy[r1_in_rn] && r1_in_rn!=reg1_finished) stall = 1;
-        else if(reg_busy[r2_in_rn] && r2_in_rn!=reg2_finished) stall = 1;
+        else if(reg_busy[r1_in_rn] && r1_in_rn!=reg1_finished && r1_in_rn!=reg2_finished) stall = 1;
+        else if(reg_busy[r2_in_rn] && r2_in_rn!=reg2_finished && r2_in_rn!=reg1_finished) stall = 1;
 
         //We just issued something to an execution unit
         else if(instIssued) begin
@@ -80,6 +81,17 @@ module schedule(
                 if(rd2_out_rn==r1_in_rn) stall = 1;
                 else if(rd2_out_rn==r2_in_rn) stall = 1;
             end
+        end
+    end
+
+    always @(*)
+    begin
+        willIssue = 0;
+        if(~stall) begin
+            if(alu_type & (~alu1_busy | ~alu2_busy)) willIssue = 1;
+            else if(advint_type & ~advint_busy) willIssue = 1;
+            else if(memunit_type & ~memunit_busy) willIssue = 1;
+            else if(branch_type & ~branch_busy) willIssue = 1;
         end
     end
 
