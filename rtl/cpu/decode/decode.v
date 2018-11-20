@@ -112,7 +112,7 @@ module decode(
                 rs2_rn <= canonInst[37:32];
                 rd_rn <= canonInst[55:50];
                 rd2_rn <= canonInst[49:44];
-                imm_data <= ji_type ? canonInst[55:0] :
+                imm_data <= ji_type ? {{8{1'b0}},canonInst[55:0]} : //TODO Need to decide how upper bits are handled
                             signedImm ? {{32{canonInst[31]}},canonInst[31:0]} :
                             {{32{1'b0}},canonInst[31:0]};
 
