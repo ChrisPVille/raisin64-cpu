@@ -44,7 +44,7 @@ module pipeline(
     wire[5:0] de_rd2_rn;
     wire[5:0] de_rs1_rn;
     wire[5:0] de_rs2_rn;
-    wire[55:0] de_imm_data;
+    wire[63:0] de_imm_data;
 
     wire de_willIssue;
 
@@ -116,7 +116,7 @@ module pipeline(
     reg sc_type;
     reg[2:0] sc_unit;
     reg[1:0] sc_op;
-    reg[55:0] sc_imm_data;
+    reg[63:0] sc_imm_data;
 
     always @(posedge clk or negedge rst_n)
     begin
@@ -124,7 +124,7 @@ module pipeline(
             sc_type <= 0;
             sc_unit <= 3'h0;
             sc_op <= 2'h0;
-            sc_imm_data <= 56'h0;
+            sc_imm_data <= 64'h0;
         end else begin
             sc_type <= de_type;
             sc_unit <= de_unit;
@@ -159,13 +159,13 @@ module pipeline(
     wire ex_branch_stall;
 
     ex_alu ex_alu1(
-        .clk(clk), .rst_n(rst_n), .in1(rf_data1), .in2(sc_type ? sc_imm_data[31:0] : rf_data2), .out(ex_alu1_result),
+        .clk(clk), .rst_n(rst_n), .in1(rf_data1), .in2(sc_type ? sc_imm_data : rf_data2), .out(ex_alu1_result),
         .ex_enable(sc_alu1_en), .ex_busy(sc_alu1_busy), .rd_in_rn(sc_rd_rn), .unit(sc_unit),
         .op(sc_op), .rd_out_rn(ex_alu1_rd_rn), .valid(ex_alu1_valid), .stall(ex_alu1_stall)
         );
 
     ex_alu ex_alu2(
-        .clk(clk), .rst_n(rst_n), .in1(rf_data1), .in2(sc_type ? sc_imm_data[31:0] : rf_data2), .out(ex_alu2_result),
+        .clk(clk), .rst_n(rst_n), .in1(rf_data1), .in2(sc_type ? sc_imm_data : rf_data2), .out(ex_alu2_result),
         .ex_enable(sc_alu2_en), .ex_busy(sc_alu2_busy), .rd_in_rn(sc_rd_rn), .unit(sc_unit),
         .op(sc_op), .rd_out_rn(ex_alu2_rd_rn), .valid(ex_alu2_valid), .stall(ex_alu2_stall)
         );

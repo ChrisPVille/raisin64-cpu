@@ -21,7 +21,7 @@ module decode(
     output reg[5:0] rs2_rn,
     output reg[5:0] rd_rn,
     output reg[5:0] rd2_rn,
-    output reg[55:0] imm_data,
+    output reg[63:0] imm_data,
 
     //Indicates which registers are loaded for this instruction
     output reg[5:0] r1_rn,
@@ -48,6 +48,24 @@ module decode(
     assign advance64 = ~stall && (instIn[63:62] == 2'b11);
 
     reg load_rs1, load_rs1_rs2, load_rs1_rd;
+
+    reg signedImm;
+
+    always @(*) begin
+        signedImm = 0;
+        casex(canonInst[60:56])
+        5'b000xx, //ADD, SUB
+        5'b001x0, //SLTI, SGTI
+        5'b100xx, //LW, L32, L16, L8
+        5'b101x1, //L32S, L8S
+        5'b10110, //L16S
+        5'b110xx, //SW, S32, S16, S8
+        5'b1110x: signedImm = 1; //BEQ, BEQAL
+        endcase
+    end
+
+    wire ji_type;
+    assign ji_type = &canonInst[61:57]; //Imm Type, Unit 7, JALI or JI
 
     always @(*) begin
         load_rs1 = 0;
@@ -94,7 +112,9 @@ module decode(
                 rs2_rn <= canonInst[37:32];
                 rd_rn <= canonInst[55:50];
                 rd2_rn <= canonInst[49:44];
-                imm_data <= canonInst[55:0];
+                imm_data <= ji_type ? canonInst[55:0] :
+                            signedImm ? {{32{canonInst[31]}},canonInst[31:0]} :
+                            {{32{1'b0}},canonInst[31:0]};
 
                 r1_rn <= (load_rs1|load_rs1_rs2|load_rs1_rd) ? canonInst[43:38] : 6'h0;
                 r2_rn <= load_rs1_rd ? canonInst[55:50] :
