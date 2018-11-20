@@ -8,7 +8,7 @@
 `define OP16_SYSCALL 3'h4
 `define OP16_J       3'h5
 `define OP16_JAL     3'h6
-`define OP16_ADD     3'h7
+`define OP16_BAD     3'h7
 
 //32 and 64-bit Opcodes
 `define OP_ADD            6'h00

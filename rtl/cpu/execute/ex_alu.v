@@ -33,7 +33,7 @@ module ex_alu(
             valid <= 0;
             out <= 64'h0;
             rd_out_rn <= 6'h0;
-        end else if(~stall) begin
+        end else begin
             valid <= ex_enable;
             out <= out_pre;
             rd_out_rn <= rd_in_rn;

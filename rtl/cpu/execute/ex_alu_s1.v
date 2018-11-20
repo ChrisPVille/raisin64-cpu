@@ -21,8 +21,8 @@ module ex_alu_s1(
         if(enable) case(unit)
             3'h0: //Basic integer math
                 case(op[0])
-                    0,2: out_pre = in1 + in2; //ADD
-                    1,3: out_pre = in1 - in2; //SUB
+                    0: out_pre = in1 + in2; //ADD
+                    1: out_pre = in1 - in2; //SUB
                 endcase
             3'h1: //Compare/Set
                 case(op)
