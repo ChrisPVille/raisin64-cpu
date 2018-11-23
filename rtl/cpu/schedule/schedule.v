@@ -15,8 +15,7 @@ module schedule(
     input[5:0] rd2_in_rn,
 
     //# {{control|Decoded Instruction Control}}
-    output reg willIssue,
-    output reg stall,
+    output reg will_issue,
 
     //# {{control|Register Control}}
     input[5:0] reg1_finished,
@@ -58,15 +57,17 @@ module schedule(
     wire instIssued;
     assign instIssued = alu1_en | alu2_en | advint_en | memunit_en | branch_en;
 
+    reg operand_unavailable;
+
     always @(*)
     begin
-        stall = 0;
+        operand_unavailable = 0;
         //We are starting up and wish to stall while the decode pipeline fills
-        if(~start_stall) stall = 1;
+        if(~start_stall) operand_unavailable = 1;
 
         //The register was previously busy
-        else if(reg_busy[r1_in_rn] && r1_in_rn!=reg1_finished && r1_in_rn!=reg2_finished) stall = 1;
-        else if(reg_busy[r2_in_rn] && r2_in_rn!=reg2_finished && r2_in_rn!=reg1_finished) stall = 1;
+        else if(reg_busy[r1_in_rn] && r1_in_rn!=reg1_finished && r1_in_rn!=reg2_finished) operand_unavailable = 1;
+        else if(reg_busy[r2_in_rn] && r2_in_rn!=reg2_finished && r2_in_rn!=reg1_finished) operand_unavailable = 1;
 
         //We just issued something to an execution unit
         else if(instIssued) begin
@@ -74,24 +75,24 @@ module schedule(
             if(|r1_in_rn) begin
                 //And it matches the previous destination register number.  We
                 //will stall here until it is picked up by reg_busy next cycle
-                if(rd_out_rn==r1_in_rn) stall = 1;
-                else if(rd_out_rn==r2_in_rn) stall = 1;
+                if(rd_out_rn==r1_in_rn) operand_unavailable = 1;
+                else if(rd_out_rn==r2_in_rn) operand_unavailable = 1;
             end
             if(|r2_in_rn) begin
-                if(rd2_out_rn==r1_in_rn) stall = 1;
-                else if(rd2_out_rn==r2_in_rn) stall = 1;
+                if(rd2_out_rn==r1_in_rn) operand_unavailable = 1;
+                else if(rd2_out_rn==r2_in_rn) operand_unavailable = 1;
             end
         end
     end
 
     always @(*)
     begin
-        willIssue = 0;
-        if(~stall) begin
-            if(alu_type & (~alu1_busy | ~alu2_busy)) willIssue = 1;
-            else if(advint_type & ~advint_busy) willIssue = 1;
-            else if(memunit_type & ~memunit_busy) willIssue = 1;
-            else if(branch_type & ~branch_busy) willIssue = 1;
+        will_issue = 0;
+        if(~operand_unavailable) begin
+            if(alu_type & (~alu1_busy | ~alu2_busy)) will_issue = 1;
+            else if(advint_type & ~advint_busy) will_issue = 1;
+            else if(memunit_type & ~memunit_busy) will_issue = 1;
+            else if(branch_type & ~branch_busy) will_issue = 1;
         end
     end
 
@@ -122,7 +123,7 @@ module schedule(
             rd_out_rn <= 6'h0;
             rd2_out_rn <= 6'h0;
 
-            if(~stall) begin
+            if(~operand_unavailable) begin
                 if(alu_type & ~alu1_busy) begin
                     alu1_en <= 1;
                     rd_out_rn <= rd_in_rn;

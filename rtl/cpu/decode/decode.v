@@ -8,11 +8,6 @@ module decode(
     //# {{data|Fetch Data}}
     input[63:0] instIn,
 
-    //# {{control|Fetch Control}}
-    output advance16,
-    output advance32,
-    output advance64,
-
     //# {{data|Instruction Data Fields}}
     output reg type,
     output reg[2:0] unit,
@@ -42,10 +37,6 @@ module decode(
     de_badDetect de_badDetect_1(
         .instIn(instIn), .badOpcode(badOpcode)
         );
-
-    assign advance16 = ~stall && ~instIn[63];
-    assign advance32 = ~stall && (instIn[63:62] == 2'b10);
-    assign advance64 = ~stall && (instIn[63:62] == 2'b11);
 
     reg load_rs1, load_rs1_rs2, load_rs1_rd;
 

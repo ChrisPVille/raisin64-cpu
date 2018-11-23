@@ -15,19 +15,19 @@ module fetch(
     //# {{data|Instruction Word}}
     output[63:0] instData,
 
-    //# {{control|Decoder Status}}
-    input advance16,
-    input advance32,
-    input advance64
+    //# {{control|Pipeline Status}}
+    input stall
     );
 
     reg[63:0] seq_pc;
     reg[63:0] prev_pc;
 
-    wire advance;
+    wire advance, advance16, advance32, advance64;
     assign advance = advance16 | advance32 | advance64;
 
-    assign imem_addr = advance ? seq_pc : prev_pc;
+    assign advance16 = ~stall && ~imem_data[63];
+    assign advance32 = ~stall && (imem_data[63:62] == 2'b10);
+    assign advance64 = ~stall && (imem_data[63:62] == 2'b11);
 
     always @(posedge clk or negedge rst_n)
     begin
@@ -57,6 +57,7 @@ module fetch(
         end
     end
 
+    assign imem_addr = advance ? seq_pc : prev_pc;
     assign instData = advance ? imem_data : instData_pre;
 
 endmodule
