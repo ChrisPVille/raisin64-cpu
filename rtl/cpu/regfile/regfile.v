@@ -24,15 +24,9 @@ module regfile(
     reg[63:0] r1_data_pre, r2_data_pre;
     integer i;
 
-    //TODO if place-route isn't smart enough to figure it out and use block ram, have two register files with write ports cross connected so we get "two" read ports on a clock cycle using multiple simple dual-port rams.
-    always @(posedge clk or negedge rst_n)
-    begin
-        if(~rst_n) begin
-            for(i = 1; i<64; i = i+1) file[i] <= 64'h0;
-        end else begin
-            if(w_en && w_rn!=6'h0) file[w_rn] <= w_data;
-        end
-    end
+    initial for(i = 1; i<64; i = i+1) file[i] <= 64'h0;
+
+    always @(posedge clk) if(w_en && w_rn!=6'h0) file[w_rn] <= w_data;
 
     always @(posedge clk or negedge rst_n)
     begin
