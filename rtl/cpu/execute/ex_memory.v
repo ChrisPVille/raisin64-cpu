@@ -153,7 +153,6 @@ module ex_memory(
             end
 
             default: begin
-                $error("Reached unreachable case in memory state machine");
                 state <= START; //TODO Throw exception
             end
             endcase
