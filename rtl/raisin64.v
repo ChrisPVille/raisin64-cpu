@@ -64,6 +64,7 @@ module raisin64 (
         if(~rst_n) dmem_cycle_complete <= 0;
         else if(dmem_rstrobe) dmem_cycle_complete <= 1;
         else if(dmem_wstrobe) dmem_cycle_complete <= 1;
+        else dmem_cycle_complete <= 0;
     end
 
     ram #(

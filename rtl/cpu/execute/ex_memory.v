@@ -86,7 +86,7 @@ module ex_memory(
     reg[2:0] state;
     reg[63:0] effective_addr;
 
-    assign ex_busy = stall || (state != START);
+    assign ex_busy = ex_enable || stall || (state != START);
 
     always @(posedge clk or negedge rst_n)
     begin
@@ -144,16 +144,16 @@ module ex_memory(
                     0: out <= dmem_din;
 
                     //32-Bit load
-                    1: out <= sign_extend_reg ? {{32{dmem_din[31]}},dmem_din[31:0]} :
-                                                {{32{1'b0}},dmem_din[31:0]};
+                    1: out <= sign_extend_reg ? {{32{dmem_din[63]}},dmem_din[63:32]} :
+                                                {{32{1'b0}},dmem_din[63:32]};
 
                     //16-Bit load
-                    2: out <= sign_extend_reg ? {{48{dmem_din[15]}},dmem_din[15:0]} :
-                                                {{48{1'b0}},dmem_din[15:0]};
+                    2: out <= sign_extend_reg ? {{48{dmem_din[63]}},dmem_din[63:48]} :
+                                                {{48{1'b0}},dmem_din[63:48]};
 
                     //8-Bit load
-                    3: out <= sign_extend_reg ? {{56{dmem_din[7]}},dmem_din[7:0]} :
-                                                {{56{1'b0}},dmem_din[7:0]};
+                    3: out <= sign_extend_reg ? {{56{dmem_din[63]}},dmem_din[63:56]} :
+                                                {{56{1'b0}},dmem_din[63:56]};
                     endcase
                     state <= START;
                 end
