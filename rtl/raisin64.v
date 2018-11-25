@@ -27,9 +27,9 @@ module raisin64 (
     wire[63:0] imem_data;
 
     wire[63:0] dmem_addr;
-    wire[63:0] dmem_dout;
-    wire[63:0] dmem_din;
-    wire dmem_cycle_complete;
+    wire[63:0] dmem_to_ram;
+    wire[63:0] dmem_from_ram;
+    reg dmem_cycle_complete;
     wire dmem_rstrobe;
     wire dmem_wstrobe;
 
@@ -40,8 +40,8 @@ module raisin64 (
         .imem_data(imem_data),
         .imem_data_valid(imem_data_ready),
         .imem_addr_valid(imem_addr_valid),
-        .dmem_addr(dmem_addr), .dmem_dout(dmem_dout),
-        .dmem_din(dmem_din),
+        .dmem_addr(dmem_addr), .dmem_dout(dmem_to_ram),
+        .dmem_din(dmem_from_ram),
         .dmem_cycle_complete(dmem_cycle_complete),
         .dmem_rstrobe(dmem_rstrobe),
         .dmem_wstrobe(dmem_wstrobe)
@@ -59,14 +59,21 @@ module raisin64 (
         .data_out(imem_data)
         );
 
+    always @(posedge clk or negedge rst_n)
+    begin
+        if(~rst_n) dmem_cycle_complete <= 0;
+        else if(dmem_rstrobe) dmem_cycle_complete <= 1;
+        else if(dmem_wstrobe) dmem_cycle_complete <= 1;
+    end
+
     ram #(
         .NUM_BYTES(256)
         ) dmem (
         .clk(clk),
         .we(dmem_wstrobe), .cs(dmem_wstrobe|dmem_rstrobe),
         .addr(dmem_addr),
-        .data_in(dmem_din),
-        .data_out(dmem_dout)
+        .data_in(dmem_to_ram),
+        .data_out(dmem_from_ram)
         );
 
 endmodule

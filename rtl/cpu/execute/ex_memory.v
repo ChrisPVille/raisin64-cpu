@@ -86,6 +86,8 @@ module ex_memory(
     reg[2:0] state;
     reg[63:0] effective_addr;
 
+    assign ex_busy = stall || (state != START);
+
     always @(posedge clk or negedge rst_n)
     begin
         if(~rst_n) begin
