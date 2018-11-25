@@ -51,6 +51,9 @@ module commit(
         end else if(alu2_valid) begin
             write_data = alu2_result;
             write_rn = alu2_rn;
+        end else if(memunit_valid) begin
+            write_data = memunit_result;
+            write_rn = memunit_rn;
         end
     end
 

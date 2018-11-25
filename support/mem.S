@@ -14,6 +14,7 @@ l32 $r2, 4($zero)
 l16 $r3, 4($zero)
 l8  $r4, 4($zero)
 lui $r5, 0xfefefefe
+sw $r5, ($zero)
 l32s $r6, ($zero)
 l16s $r6, ($zero)
 l8s $r6, ($zero)

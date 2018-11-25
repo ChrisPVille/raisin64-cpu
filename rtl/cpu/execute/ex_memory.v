@@ -78,7 +78,6 @@ module ex_memory(
     ///////////////////////////////
 
     reg[1:0] state;
-    reg[63:0] effective_addr;
 
     assign ex_busy = ex_enable || stall || (state != START && ~dmem_cycle_complete);
 
@@ -86,7 +85,6 @@ module ex_memory(
     begin
         if(~rst_n) begin
             state <= START;
-            effective_addr <= 64'h0;
             out <= 64'h0;
             valid <= 1'b0;
             rd_out_rn <= 6'h0;
@@ -104,8 +102,6 @@ module ex_memory(
                 dmem_wstrobe <= 0;
 
                 if(ex_enable) begin
-                    effective_addr <= base + offset;
-
                     if(load) begin
                         state <= READ_WAIT;
                         dmem_addr <= base + offset;
