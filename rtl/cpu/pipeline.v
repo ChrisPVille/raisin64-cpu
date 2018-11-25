@@ -11,7 +11,17 @@ module pipeline(
 
     //# {{control|Instruction Memory Bus Control}}
     input imem_data_valid,
-    output imem_addr_valid
+    output imem_addr_valid,
+
+    //# {{data|Data Memory Bus}}
+    output[63:0] dmem_addr,
+    output[63:0] dmem_dout,
+    input[63:0] dmem_din,
+
+    //# {{control|Data Memory Bus Control}}
+    input dmem_cycle_complete,
+    output dmem_rstrobe,
+    output dmem_wstrobe
     );
 
     wire will_issue;
@@ -165,6 +175,19 @@ module pipeline(
         .clk(clk), .rst_n(rst_n), .in1(rf_data1), .in2(sc_type ? sc_imm_data : rf_data2), .out(ex_alu2_result),
         .ex_enable(sc_alu2_en), .ex_busy(sc_alu2_busy), .rd_in_rn(sc_rd_rn), .unit(sc_unit),
         .op(sc_op), .rd_out_rn(ex_alu2_rd_rn), .valid(ex_alu2_valid), .stall(ex_alu2_stall)
+        );
+
+    ex_memory ex_memory1(
+        .clk(clk), .rst_n(rst_n),
+        .dmem_din(dmem_din), .dmem_dout(dmem_dout), .dmem_addr(dmem_addr),
+        .dmem_cycle_complete(dmem_cycle_complete),
+        .dmem_rstrobe(dmem_rstrobe), .dmem_wstrobe(dmem_wstrobe),
+        .base(rf_data1), .data(rf_data2), .offset(sc_imm_data[31:0]),
+        .out(ex_memunit_result),
+        .ex_enable(sc_memunit_en), .ex_busy(sc_memunit_busy),
+        .rd_in_rn(sc_rd_rn), .unit(sc_unit), .op(sc_op),
+        .rd_out_rn(ex_memunit_rd_rn), .valid(ex_memunit_valid),
+        .stall(ex_memunit_stall)
         );
 
     //////////  COMMIT   //////////

@@ -26,13 +26,25 @@ module raisin64 (
     wire[63:0] imem_addr;
     wire[63:0] imem_data;
 
+    wire[63:0] dmem_addr;
+    wire[63:0] dmem_dout;
+    wire[63:0] dmem_din;
+    wire dmem_cycle_complete;
+    wire dmem_rstrobe;
+    wire dmem_wstrobe;
+
     pipeline pipeline1(
         .clk(clk),
         .rst_n(rst_n),
         .imem_addr(imem_addr),
         .imem_data(imem_data),
         .imem_data_valid(imem_data_ready),
-        .imem_addr_valid(imem_addr_valid)
+        .imem_addr_valid(imem_addr_valid),
+        .dmem_addr(dmem_addr), .dmem_dout(dmem_dout),
+        .dmem_din(dmem_din),
+        .dmem_cycle_complete(dmem_cycle_complete),
+        .dmem_rstrobe(dmem_rstrobe),
+        .dmem_wstrobe(dmem_wstrobe)
         );
 
     assign imem_data_ready = 1;
@@ -45,6 +57,16 @@ module raisin64 (
         .addr(imem_addr),
         .data_in(64'h0),
         .data_out(imem_data)
+        );
+
+    ram #(
+        .NUM_BYTES(256)
+        ) dmem (
+        .clk(clk),
+        .we(dmem_wstrobe), .cs(dmem_wstrobe|dmem_rstrobe),
+        .addr(dmem_addr),
+        .data_in(dmem_din),
+        .data_out(dmem_dout)
         );
 
 endmodule

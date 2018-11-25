@@ -144,7 +144,7 @@ module schedule(
                 end else if(memunit_type & ~memunit_busy) begin
                     memunit_en <= 1;
                     rd_out_rn <= rd_in_rn;
-                    if(|rd_in_rn) reg_busy[rd_in_rn] <= 1;
+                    if(|rd_in_rn && unit!=3'h6) reg_busy[rd_in_rn] <= 1;
 
                 end else if(branch_type & ~branch_busy) begin
                     branch_en <= 1;

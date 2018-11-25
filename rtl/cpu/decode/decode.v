@@ -47,9 +47,7 @@ module decode(
         casex(canonInst[60:56])
         5'b000xx, //ADD, SUB
         5'b001x0, //SLTI, SGTI
-        5'b100xx, //LW, L32, L16, L8
-        5'b101x1, //L32S, L8S
-        5'b10110, //L16S
+        5'b10xxx, //LW, L32, L16, L8, LUI, L32S, L16S, L8S
         5'b110xx, //SW, S32, S16, S8
         5'b1110x: signedImm = 1; //BEQ, BEQAL
         endcase

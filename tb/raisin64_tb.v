@@ -3,7 +3,8 @@
 module raisin64_tb();
 
     reg clk, rst_n;
-    defparam cpu.imem.INIT_FILE = "/home/christopher/git/raisin64-nexys4ddr/cpu/support/imem.hex";
+    defparam cpu.imem.INIT_FILE = "/home/christopher/git/raisin64-cpu/support/imem.hex";
+    defparam cpu.dmem.INIT_FILE = "/home/christopher/git/raisin64-cpu/support/dmem.hex";
 
     raisin64 cpu (
         .clk(clk),
