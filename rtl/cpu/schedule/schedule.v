@@ -120,9 +120,6 @@ module schedule(
             reg_busy[reg1_finished] <= 0;
             reg_busy[reg2_finished] <= 0;
 
-            rd_out_rn <= 6'h0;
-            rd2_out_rn <= 6'h0;
-
             if(~operand_unavailable) begin
                 if(alu_type & ~alu1_busy) begin
                     alu1_en <= 1;

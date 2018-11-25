@@ -1,9 +1,13 @@
 .data
-data:  .long 0x55555555
+data:  .long 0x80808080
        .quad 0x0123456789abcdef
 space: .space 244
 
 .text
+add $zero, $zero, $zero
+add $zero, $zero, $zero
+add $zero, $zero, $zero
+add $zero, $zero, $zero
 add $zero, $zero, $zero
 lw $r1, 4($zero)
 l32 $r2, 4($zero)

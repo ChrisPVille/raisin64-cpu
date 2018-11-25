@@ -34,18 +34,14 @@ module ex_memory(
     input stall
     );
 
-    localparam START = 3'h0;
-    localparam READ_STROBE = 3'h1;
-    localparam READ_WAIT = 3'h3;
-    localparam FINISH = 3'h2;
-    localparam WRITE_STROBE = 3'h4;
-    localparam WRITE_WAIT = 3'h6;
+    localparam START = 2'h0;
+    localparam READ_WAIT = 2'h1;
+    localparam WRITE_WAIT = 2'h2;
 
     ////////////////////////////////////////
     //// Registering of control signals ////
     ////////////////////////////////////////
 
-    reg[63:0] data_reg;
     reg[5:0] rd_in_rn_reg;
     reg[2:0] unit_reg;
     reg[1:0] op_reg;
@@ -53,12 +49,10 @@ module ex_memory(
     always @(posedge clk or negedge rst_n)
     begin
         if(~rst_n) begin
-            data_reg <= 64'h0;
             rd_in_rn_reg <= 6'h0;
             unit_reg <= 3'h0;
             op_reg <= 2'h0;
         end else if(ex_enable) begin
-            data_reg <= data;
             rd_in_rn_reg <= rd_in_rn;
             unit_reg <= unit;
             op_reg <= op;
@@ -83,10 +77,10 @@ module ex_memory(
     //// State machine control ////
     ///////////////////////////////
 
-    reg[2:0] state;
+    reg[1:0] state;
     reg[63:0] effective_addr;
 
-    assign ex_busy = ex_enable || stall || (state != START);
+    assign ex_busy = ex_enable || stall || (state != START && ~dmem_cycle_complete);
 
     always @(posedge clk or negedge rst_n)
     begin
@@ -111,27 +105,22 @@ module ex_memory(
 
                 if(ex_enable) begin
                     effective_addr <= base + offset;
-                    if(load) state <= READ_STROBE; // Loads/Reads
-                    else if(store) state <= WRITE_STROBE; // Stores/Writes
-                    else if(lui) begin
+
+                    if(load) begin
+                        state <= READ_WAIT;
+                        dmem_addr <= base + offset;
+                        dmem_rstrobe <= 1;
+                    end else if(store) begin
+                        dmem_addr <= base + offset;
+                        dmem_dout <= data;
+                        dmem_wstrobe <= 1;
+                        state <= WRITE_WAIT;
+                    end else if(lui) begin
                         out <= {offset,{32{1'b0}}};
                         valid <= 1;
                         rd_out_rn <= rd_in_rn;
                     end
                 end
-            end
-
-            READ_STROBE: begin
-                dmem_addr <= effective_addr;
-                dmem_rstrobe <= 1;
-                state <= READ_WAIT;
-            end
-
-            WRITE_STROBE: begin
-                dmem_addr <= effective_addr;
-                dmem_dout <= data_reg;
-                dmem_wstrobe <= 1;
-                state <= WRITE_WAIT;
             end
 
             READ_WAIT: begin
