@@ -11,7 +11,7 @@ module ex_memory(
 
     //# {{control|Memory Control Signals}}
     input dmem_cycle_complete,
-    output dmem_width,
+    output[1:0] dmem_width,
     output reg dmem_rstrobe,
     output reg dmem_wstrobe,
 

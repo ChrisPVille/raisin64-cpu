@@ -61,7 +61,7 @@ module debug_control(
     reg[63:0] cpu_userData;
 
     //The Jtaglet JTAG TAP
-    jtaglet #(.ID_PARTVER(4'h1), .ID_PARTNUM(16'hCAFE), .ID_MANF(11'h035)) jtag_if
+    jtaglet #(.ID_PARTVER(4'h1), .ID_PARTNUM(16'hCAFE), .ID_MANF(11'h035), .USERDATA_LEN(64)) jtag_if
         (.tck(jtag_tck), .tms(jtag_tms), .tdo(jtag_tdo), .tdi(jtag_tdi), .trst(jtag_trst),
          .userData_out(jtag_userData), .userData_in(cpu_userData), .userOp(jtag_userOp),
          .userOp_ready(jtag_userOp_ready));

@@ -8,7 +8,11 @@ module raisin64_tb();
 
     raisin64 cpu (
         .clk(clk),
-        .rst_n(rst_n)
+        .rst_n(rst_n),
+        .jtag_tck(1'b0),
+        .jtag_tms(1'b0),
+        .jtag_tdi(1'b0),
+        .jtag_trst(1'b0)
         );
 
     initial begin
