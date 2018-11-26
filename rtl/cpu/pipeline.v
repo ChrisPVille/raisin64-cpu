@@ -20,6 +20,7 @@ module pipeline(
 
     //# {{control|Data Memory Bus Control}}
     input dmem_cycle_complete,
+    output[1:0] dmem_write_width,
     output dmem_rstrobe,
     output dmem_wstrobe
     );
@@ -181,6 +182,7 @@ module pipeline(
         .clk(clk), .rst_n(rst_n),
         .dmem_din(dmem_din), .dmem_dout(dmem_dout), .dmem_addr(dmem_addr),
         .dmem_cycle_complete(dmem_cycle_complete),
+        .dmem_width(dmem_write_width),
         .dmem_rstrobe(dmem_rstrobe), .dmem_wstrobe(dmem_wstrobe),
         .base(rf_data1), .data(rf_data2), .offset(sc_imm_data[31:0]),
         .out(ex_memunit_result),
