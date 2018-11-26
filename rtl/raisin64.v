@@ -57,7 +57,7 @@ module raisin64 (
     wire[63:0] effective_imem_addr = dbg_imem_ce ? dbg_imem_addr : imem_addr;
     wire[63:0] effective_imem_data_from_ram = dbg_halt_cpu ? 64'h0 : imem_data;
     wire[63:0] effective_dmem_addr = dbg_dmem_ce ? dbg_dmem_addr : dmem_addr;
-    wire[63:0] effective_dmem_to_ram = dbg_dmem_we ? dbg_dmem_din : dbg_dmem_to_ram;
+    wire[63:0] effective_dmem_to_ram = dbg_dmem_we ? dbg_dmem_to_ram : dmem_to_ram;
 
     pipeline pipeline1(
         .clk(clk),
@@ -98,7 +98,7 @@ module raisin64 (
         .NUM_BYTES(256)
         ) dmem (
         .clk(clk),
-        .we(dmem_wstrobe), .cs(dmem_wstrobe|dmem_rstrobe),
+        .we(dmem_wstrobe|dbg_dmem_we), .cs(dmem_wstrobe|dmem_rstrobe|dbg_dmem_ce),
         .addr(effective_dmem_addr),
         .data_in(effective_dmem_to_ram),
         .data_out(dmem_from_ram)
