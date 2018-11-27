@@ -81,6 +81,7 @@ module raisin64 (
         ) imem (
         .clk(clk),
         .we(dbg_imem_we), .cs(imem_addr_valid | dbg_imem_ce),
+        .write_width(2'h0),
         .addr(effective_imem_addr),
         .data_in(dbg_imem_to_ram),
         .data_out(imem_data)
@@ -99,6 +100,7 @@ module raisin64 (
         ) dmem (
         .clk(clk),
         .we(dmem_wstrobe|dbg_dmem_we), .cs(dmem_wstrobe|dmem_rstrobe|dbg_dmem_ce),
+        .write_width(dmem_write_width),
         .addr(effective_dmem_addr),
         .data_in(effective_dmem_to_ram),
         .data_out(dmem_from_ram)

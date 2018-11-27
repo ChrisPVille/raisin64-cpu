@@ -4,6 +4,7 @@ module ram(input clk,
             input cs,
             input[63:0] addr,
             input[63:0] data_in,
+            input[1:0] write_width, //0==64bit, 1==32bit, 2==16bit, 3==8bit
             output reg[63:0] data_out);
 
     parameter NUM_BYTES = 0;
@@ -20,46 +21,11 @@ module ram(input clk,
         weA_b = 8'h00;
         weB_b = 8'h00;
         if(we) begin
-            case(addr[2:0])
-            3'h0: begin
-                weA_b = 8'hFF;
-                weB_b = 8'h00;
-                end
-
-            3'h1: begin
-                weA_b = 8'h7F;
-                weB_b = 8'h01;
-                end
-
-            3'h2: begin
-                weA_b = 8'h3F;
-                weB_b = 8'h03;
-                end
-
-            3'h3: begin
-                weA_b = 8'h1F;
-                weB_b = 8'h07;
-                end
-
-            3'h4: begin
-                weA_b = 8'h0F;
-                weB_b = 8'h0F;
-                end
-
-            3'h5: begin
-                weA_b = 8'h07;
-                weB_b = 8'h1F;
-                end
-
-            3'h6: begin
-                weA_b = 8'h03;
-                weB_b = 8'h3F;
-                end
-
-            3'h7: begin
-                weA_b = 8'h01;
-                weB_b = 8'h7F;
-                end
+            case(write_width)
+            2'b00: {weA_b,weB_b} = 16'hFF00 >> addr[2:0];
+            2'b01: {weA_b,weB_b} = 16'hF000 >> addr[2:0];
+            2'b10: {weA_b,weB_b} = 16'hC000 >> addr[2:0];
+            2'b11: {weA_b,weB_b} = 16'h8000 >> addr[2:0];
             endcase
         end
     end
@@ -92,16 +58,7 @@ module ram(input clk,
     end
 
     always @(*) begin
-        case(addr[2:0])
-        3'h0: data_out = ramA_result;
-        3'h1: data_out = {ramA_result[63:8],ramB_result[63:56]};
-        3'h2: data_out = {ramA_result[63:16],ramB_result[63:48]};
-        3'h3: data_out = {ramA_result[63:24],ramB_result[63:40]};
-        3'h4: data_out = {ramA_result[63:32],ramB_result[63:32]};
-        3'h5: data_out = {ramA_result[63:40],ramB_result[63:24]};
-        3'h6: data_out = {ramA_result[63:48],ramB_result[63:16]};
-        3'h7: data_out = {ramA_result[63:56],ramB_result[63:8]};
-        endcase
+        data_out = ({ramA_result,ramB_result} >> ((8-addr[2:0])*8)) & 64'hFFFFFFFFFFFFFFFF;
     end
 
     //Populate our program memory with the user-provided hex file
