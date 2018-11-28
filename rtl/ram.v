@@ -10,7 +10,7 @@ module ram(input clk,
     parameter NUM_BYTES = 0;
     parameter INIT_FILE = "";
 
-    reg[63:0] ram[0:(NUM_BYTES/8)-1]; //Nx64 RAM
+    reg[63:0] ram[0:(NUM_BYTES/8)-1]; //Nx64 RAM TODO Ceiling?
 
     reg[63:0] ramA_result, ramB_result;
 
