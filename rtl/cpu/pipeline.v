@@ -28,6 +28,8 @@ module pipeline(
     wire sc_ready;
     wire[63:0] jump_pc;
     wire do_jump;
+    wire cancel_pending;
+    assign cancel_pending = do_jump;
 
     //////////  FETCH    //////////
     wire[63:0] fe_inst;
@@ -62,7 +64,7 @@ module pipeline(
 
     decode decode1(
         .clk(clk), .rst_n(rst_n),
-        .instIn(fe_inst),
+        .instIn(cancel_pending ? 64'h0 : fe_inst),
         .type(de_type),
         .unit(de_unit),
         .op(de_op),
@@ -81,7 +83,8 @@ module pipeline(
         if(~rst_n) begin
             de_next_pc <= 64'h0;
         end else begin
-            de_next_pc <= fe_next_pc;
+            if(cancel_pending) de_next_pc <= 64'h0;
+            else de_next_pc <= fe_next_pc;
         end
     end
 
@@ -123,7 +126,8 @@ module pipeline(
         .clk(clk), .rst_n(rst_n),
         .type(de_type), .unit(de_unit), .op(de_op),
         .r1_in_rn(de_r1_rn), .r2_in_rn(de_r2_rn),
-        .rd_in_rn(de_rd_rn), .rd2_in_rn(de_rd2_rn),
+        .rd_in_rn(cancel_pending ? 6'h0 : de_rd_rn),
+        .rd2_in_rn(cancel_pending ? 6'h0 : de_rd2_rn),
         .sc_ready(sc_ready),
         .rd_out_rn(sc_rd_rn), .rd2_out_rn(sc_rd2_rn),
 
@@ -153,8 +157,10 @@ module pipeline(
             sc_imm_data <= 64'h0;
             sc_next_pc <= 64'h0;
         end else begin
+            if(cancel_pending) sc_unit <= 3'h0;
+            else sc_unit <= de_unit;
+
             sc_type <= de_type;
-            sc_unit <= de_unit;
             sc_op <= de_op;
             sc_imm_data <= de_imm_data;
             sc_next_pc <= de_next_pc;

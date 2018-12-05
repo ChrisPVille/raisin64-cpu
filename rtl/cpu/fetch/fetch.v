@@ -37,7 +37,7 @@ module fetch(
             next_seq_pc <= 64'h0;
             prev_pc <= 64'h0;
         end else begin
-            if(do_jump) prev_pc <= jump_pc;
+            if(do_jump) next_seq_pc <= jump_pc;
             else if(imem_data_valid) begin
                 if(advance) prev_pc <= next_seq_pc;
                 if(advance16) next_seq_pc <= next_seq_pc + 2;

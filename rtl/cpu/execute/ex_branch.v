@@ -44,6 +44,7 @@ module ex_branch(
 
             if(ex_enable) begin
                 if(op[1]) begin //Jump
+                    //Input is already properly shifted by the time it gets here
                     jump_pc <= in1;
                     do_jump <= 1;
                     if(~op[0]) begin //And Link
@@ -51,7 +52,7 @@ module ex_branch(
                         r63 <= next_pc;
                     end
                 end else if (~op[1] & op_eq) begin //Branch
-                    jump_pc <= next_pc + imm;
+                    jump_pc <= next_pc + (imm<<1);
                     do_jump <= 1;
                     if(~op[0]) begin //And Link
                         r63_update <= 1;
