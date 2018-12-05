@@ -14,7 +14,7 @@ module fetch(
 
     //# {{data|Pipeline Data}}
     output[63:0] inst_data,
-    output[63:0] next_seq_pc,
+    output reg[63:0] next_seq_pc,
     input[63:0] jump_pc,
 
     //# {{control|Pipeline Status}}
@@ -22,7 +22,6 @@ module fetch(
     input stall
     );
 
-    reg[63:0] next_seq_pc;
     reg[63:0] prev_pc;
 
     wire advance, advance16, advance32, advance64;
@@ -37,11 +36,14 @@ module fetch(
         if(~rst_n) begin
             next_seq_pc <= 64'h0;
             prev_pc <= 64'h0;
-        end else if(imem_data_valid) begin
-            if(advance) prev_pc <= next_seq_pc;
-            if(advance16) next_seq_pc <= next_seq_pc + 2;
-            else if(advance32) next_seq_pc <= next_seq_pc + 4;
-            else if(advance64) next_seq_pc <= next_seq_pc + 8;
+        end else begin
+            if(do_jump) prev_pc <= jump_pc;
+            else if(imem_data_valid) begin
+                if(advance) prev_pc <= next_seq_pc;
+                if(advance16) next_seq_pc <= next_seq_pc + 2;
+                else if(advance32) next_seq_pc <= next_seq_pc + 4;
+                else if(advance64) next_seq_pc <= next_seq_pc + 8;
+            end
         end
     end
 
@@ -60,7 +62,10 @@ module fetch(
         end
     end
 
-    assign imem_addr = advance ? next_seq_pc : prev_pc;
+    assign imem_addr = do_jump ? jump_pc :
+                       advance ? next_seq_pc :
+                       prev_pc;
+
     assign inst_data = advance ? imem_data : inst_data_pre;
 
 endmodule
