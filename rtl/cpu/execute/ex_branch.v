@@ -47,14 +47,14 @@ module ex_branch(
                     //Input is already properly shifted by the time it gets here
                     jump_pc <= in1;
                     do_jump <= 1;
-                    if(~op[0]) begin //And Link
+                    if(op[0]) begin //And Link
                         r63_update <= 1;
                         r63 <= next_pc;
                     end
                 end else if (~op[1] & op_eq) begin //Branch
                     jump_pc <= next_pc + (imm<<1);
                     do_jump <= 1;
-                    if(~op[0]) begin //And Link
+                    if(op[0]) begin //And Link
                         r63_update <= 1;
                         r63 <= next_pc;
                     end
