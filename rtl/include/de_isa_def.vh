@@ -41,8 +41,8 @@
 `define OP_BAD_1B         6'h1b
 `define OP_SYSCALL        6'h1c
 `define OP_FSTAR          6'h1d
-`define OP_JAL            6'h1e
-`define OP_J              6'h1f
+`define OP_J              6'h1e
+`define OP_JAL            6'h1f
 `define OP_ADDI           6'h20
 `define OP_SUBI           6'h21
 `define OP_BAD_22         6'h22
@@ -73,5 +73,5 @@
 `define OP_S8             6'h3b
 `define OP_BEQ            6'h3c
 `define OP_BEQAL          6'h3d
-`define OP_JALI           6'h3e
-`define OP_JI             6'h3f
+`define OP_JI             6'h3e
+`define OP_JALI           6'h3f

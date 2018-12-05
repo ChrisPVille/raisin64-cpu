@@ -9,13 +9,14 @@ module schedule(
     //# {{data|Decoded Instruction Data}}
     input type,
     input[2:0] unit,
+    input[1:0] op,
     input[5:0] r1_in_rn,
     input[5:0] r2_in_rn,
     input[5:0] rd_in_rn,
     input[5:0] rd2_in_rn,
 
     //# {{control|Decoded Instruction Control}}
-    output reg will_issue,
+    output reg sc_ready,
 
     //# {{control|Register Control}}
     input[5:0] reg1_finished,
@@ -87,12 +88,12 @@ module schedule(
 
     always @(*)
     begin
-        will_issue = 0;
-        if(~operand_unavailable) begin
-            if(alu_type & (~alu1_busy | ~alu2_busy)) will_issue = 1;
-            else if(advint_type & ~advint_busy) will_issue = 1;
-            else if(memunit_type & ~memunit_busy) will_issue = 1;
-            else if(branch_type & ~branch_busy) will_issue = 1;
+        sc_ready = 0;
+        if(~operand_unavailable & ~branch_busy) begin
+            if(alu_type & (~alu1_busy | ~alu2_busy)) sc_ready = 1;
+            else if(advint_type & ~advint_busy) sc_ready = 1;
+            else if(memunit_type & ~memunit_busy) sc_ready = 1;
+            else if(branch_type) sc_ready = 1;
         end
     end
 
@@ -120,7 +121,7 @@ module schedule(
             reg_busy[reg1_finished] <= 0;
             reg_busy[reg2_finished] <= 0;
 
-            if(~operand_unavailable) begin
+            if(~operand_unavailable & ~branch_busy) begin
                 if(alu_type & ~alu1_busy) begin
                     alu1_en <= 1;
                     rd_out_rn <= rd_in_rn;
@@ -143,10 +144,11 @@ module schedule(
                     rd_out_rn <= rd_in_rn;
                     if(|rd_in_rn && unit!=3'h6) reg_busy[rd_in_rn] <= 1;
 
-                end else if(branch_type & ~branch_busy) begin
+                end else if(branch_type) begin
                     branch_en <= 1;
                     rd_out_rn <= rd_in_rn;
-                    if(|rd_in_rn) reg_busy[rd_in_rn] <= 1; //TODO Only BAL and then only 63
+                    //No need to mark R63 busy. If the branch is taken, other
+                    //instructions in the pipeline are cancelled.
                 end
             end
         end

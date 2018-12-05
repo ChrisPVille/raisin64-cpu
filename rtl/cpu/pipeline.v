@@ -25,10 +25,13 @@ module pipeline(
     output dmem_wstrobe
     );
 
-    wire will_issue;
+    wire sc_ready;
+    wire[63:0] jump_pc;
+    wire do_jump;
 
     //////////  FETCH    //////////
     wire[63:0] fe_inst;
+    wire[63:0] fe_next_pc;
 
     fetch fetch1(
         .clk(clk),
@@ -37,8 +40,10 @@ module pipeline(
         .imem_data(imem_data),
         .imem_data_valid(imem_data_valid),
         .imem_addr_valid(imem_addr_valid),
-        .instData(fe_inst),
-        .stall(~will_issue)
+        .inst_data(fe_inst),
+        .next_seq_pc(fe_next_pc),
+        .jump_pc(jump_pc), .do_jump(do_jump),
+        .stall(~sc_ready)
         );
 
     //////////  DECODE   //////////
@@ -65,8 +70,20 @@ module pipeline(
         .rd_rn(de_rd_rn), .rd2_rn(de_rd2_rn),
         .imm_data(de_imm_data),
         .r1_rn(de_r1_rn), .r2_rn(de_r2_rn),
-        .stall(~will_issue)
+        .stall(~sc_ready)
         );
+
+    //Delay the Next PC to the schedule stage
+    reg[63:0] de_next_pc;
+
+    always @(posedge clk or negedge rst_n)
+    begin
+        if(~rst_n) begin
+            de_next_pc <= 64'h0;
+        end else begin
+            de_next_pc <= fe_next_pc;
+        end
+    end
 
     ////////// REG FILE  //////////
     //Concurrent with Schedule phase
@@ -104,10 +121,10 @@ module pipeline(
 
     schedule schedule1(
         .clk(clk), .rst_n(rst_n),
-        .type(de_type), .unit(de_unit),
+        .type(de_type), .unit(de_unit), .op(de_op),
         .r1_in_rn(de_r1_rn), .r2_in_rn(de_r2_rn),
         .rd_in_rn(de_rd_rn), .rd2_in_rn(de_rd2_rn),
-        .will_issue(will_issue),
+        .sc_ready(sc_ready),
         .rd_out_rn(sc_rd_rn), .rd2_out_rn(sc_rd2_rn),
 
         .reg1_finished(rf_writeback_rn), .reg2_finished(6'h0),
@@ -125,6 +142,7 @@ module pipeline(
     reg[2:0] sc_unit;
     reg[1:0] sc_op;
     reg[63:0] sc_imm_data;
+    reg[63:0] sc_next_pc;
 
     always @(posedge clk or negedge rst_n)
     begin
@@ -133,11 +151,13 @@ module pipeline(
             sc_unit <= 3'h0;
             sc_op <= 2'h0;
             sc_imm_data <= 64'h0;
+            sc_next_pc <= 64'h0;
         end else begin
             sc_type <= de_type;
             sc_unit <= de_unit;
             sc_op <= de_op;
             sc_imm_data <= de_imm_data;
+            sc_next_pc <= de_next_pc;
         end
     end
 
@@ -148,12 +168,14 @@ module pipeline(
     wire[63:0] ex_advint_result;
     wire[63:0] ex_advint_result2;
     wire[63:0] ex_memunit_result;
+    wire[63:0] ex_branch_r63;
 
     wire[5:0] ex_alu1_rd_rn;
     wire[5:0] ex_alu2_rd_rn;
     wire[5:0] ex_advint_rd_rn;
     wire[5:0] ex_advint_rd2_rn;
     wire[5:0] ex_memunit_rd_rn;
+    wire ex_branch_r63_update;
 
     wire ex_alu1_valid;
     wire ex_alu2_valid;
@@ -178,6 +200,17 @@ module pipeline(
         .op(sc_op), .rd_out_rn(ex_alu2_rd_rn), .valid(ex_alu2_valid), .stall(ex_alu2_stall)
         );
 
+    ex_advint ex_advint(
+        .clk(clk), .rst_n(rst_n),
+        .in1(rf_data1), .in2(rf_data2),
+        .out(ex_advint_result), .out2(ex_advint_result2),
+        .ex_enable(sc_alu2_en), .ex_busy(sc_alu2_busy),
+        .rd_in_rn(sc_rd_rn), .rd2_in_rn(sc_rd2_rn),
+        .unit(sc_unit), .op(sc_op),
+        .rd_out_rn(ex_advint_rd_rn), .rd2_out_rn(ex_advint_rd2_rn),
+        .valid(ex_advint_valid), .stall(ex_advint_stall)
+        );
+
     ex_memory ex_memory1(
         .clk(clk), .rst_n(rst_n),
         .dmem_din(dmem_din), .dmem_dout(dmem_dout), .dmem_addr(dmem_addr),
@@ -192,23 +225,46 @@ module pipeline(
         .stall(ex_memunit_stall)
         );
 
+    ex_branch ex_branch1(
+        .clk(clk), .rst_n(rst_n),
+        .in1(sc_type ? sc_imm_data : rf_data1), .in2(rf_data2), .imm(sc_imm_data),
+        .next_pc(de_next_pc), .jump_pc(jump_pc), .do_jump(do_jump),
+        .r63(ex_branch_r63), .r63_update(ex_branch_r63_update),
+        .ex_enable(sc_branch_en), .ex_busy(sc_branch_busy),
+        .stall(ex_branch_stall),
+        .unit(sc_unit), .op(sc_op)
+        );
+
     //////////  COMMIT   //////////
 
     commit commit1(
         .clk(clk), .rst_n(rst_n),
-        .alu1_result(ex_alu1_result), .alu2_result(ex_alu2_result),
-        .advint_result(ex_advint_result), .advint_result2(ex_advint_result2),
+
+        .alu1_result(ex_alu1_result),
+        .alu2_result(ex_alu2_result),
+        .advint_result(ex_advint_result),
+        .advint_result2(ex_advint_result2),
         .memunit_result(ex_memunit_result),
-        .alu1_rn(ex_alu1_rd_rn), .alu2_rn(ex_alu2_rd_rn),
-        .advint_rn(ex_advint_rd_rn), .advint_rn2(ex_advint_rd2_rn),
+        .branch_result(ex_branch_r63),
+
+        .alu1_rn(ex_alu1_rd_rn),
+        .alu2_rn(ex_alu2_rd_rn),
+        .advint_rn(ex_advint_rd_rn),
+        .advint_rn2(ex_advint_rd2_rn),
         .memunit_rn(ex_memunit_rd_rn),
-        .alu1_valid(ex_alu1_valid), .alu2_valid(ex_alu2_valid),
+
+        .alu1_valid(ex_alu1_valid),
+        .alu2_valid(ex_alu2_valid),
         .advint_valid(ex_advint_valid),
         .memunit_valid(ex_memunit_valid),
-        .alu1_stall(ex_alu1_stall), .alu2_stall(ex_alu2_stall),
+        .branch_valid(ex_branch_r63_update),
+
+        .alu1_stall(ex_alu1_stall),
+        .alu2_stall(ex_alu2_stall),
         .advint_stall(ex_advint_stall),
         .memunit_stall(ex_memunit_stall),
         .branch_stall(ex_branch_stall),
+
         .write_data(rf_writeback), .write_rn(rf_writeback_rn)
         );
 
