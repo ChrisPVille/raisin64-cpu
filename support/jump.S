@@ -11,7 +11,7 @@ addi $r3, $r3, 1
 addi $r4, $r4, 1
 addi $r5, $r5, 1
 addi $r6, $r6, 1
-ji 0x60
+ji .-8 #TODO Bugfix for assembler ver <= 0.0.2
 addi $r7, $r7, 1
 addi $r8, $r8, 1
 addi $r9, $r9, 1

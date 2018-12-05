@@ -36,13 +36,15 @@ module ex_advint(
         if(~rst_n) begin
             valid <= 0;
             out <= 64'h0;
+            out2 <= 64'h0;
             rd_out_rn <= 6'h0;
             rd2_out_rn <= 6'h0;
         end else begin
             valid <= ex_enable;
             out <= out_pre;
+            out2 <= out_pre;
             rd_out_rn <= rd_in_rn;
-            rd2_out_rn <= rd_in_rn;
+            rd2_out_rn <= rd2_in_rn;
         end
     end
 
