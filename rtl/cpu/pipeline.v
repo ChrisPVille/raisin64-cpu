@@ -234,7 +234,7 @@ module pipeline(
     ex_branch ex_branch1(
         .clk(clk), .rst_n(rst_n),
         .in1(sc_type ? sc_imm_data : rf_data1), .in2(rf_data2), .imm(sc_imm_data),
-        .next_pc(de_next_pc), .jump_pc(jump_pc), .do_jump(do_jump),
+        .next_pc(sc_next_pc), .jump_pc(jump_pc), .do_jump(do_jump),
         .r63(ex_branch_r63), .r63_update(ex_branch_r63_update),
         .ex_enable(sc_branch_en), .ex_busy(sc_branch_busy),
         .stall(ex_branch_stall),
