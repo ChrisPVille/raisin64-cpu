@@ -35,7 +35,7 @@ module decode(
         );
 
     de_badDetect de_badDetect_1(
-        .instIn(instIn), .badOpcode(badOpcode)
+        .instOpByteIn(instIn[63:56]), .badOpcode(badOpcode)
         );
 
     reg load_rs1, load_rs1_rs2, load_rs1_rd;
