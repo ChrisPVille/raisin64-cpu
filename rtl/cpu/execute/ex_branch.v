@@ -19,8 +19,8 @@ module ex_branch(
     //# {{control|Dispatch Control Signals}}
     input ex_enable,
     output ex_busy,
-    input[2:0] unit,
     input[1:0] op,
+    input type,
 
     //# {{control|Commit Control Signals}}
     input stall
@@ -45,7 +45,7 @@ module ex_branch(
             if(ex_enable) begin
                 if(op[1]) begin //Jump
                     //Input is already properly shifted by the time it gets here
-                    jump_pc <= in1;
+                    jump_pc <= type ? imm : in1;
                     do_jump <= 1;
                     if(op[0]) begin //And Link
                         r63_update <= 1;
