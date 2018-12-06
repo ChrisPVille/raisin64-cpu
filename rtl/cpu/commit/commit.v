@@ -63,7 +63,11 @@ module commit(
     always @(posedge clk or negedge rst_n)
     begin
         if(~rst_n) begin
-            for(i = 1; i <= 6; i = i + 1) pending_valid[i] <= 0;
+            for(i = 1; i <= 6; i = i + 1) begin
+                pending_data[i] <= 64'h0;
+                pending_rn[i] <= 6'h0;
+                pending_valid[i] <= 0;
+            end
         end else begin
             case(state)
             STATE_P1: pending_valid[1] <= 0;
