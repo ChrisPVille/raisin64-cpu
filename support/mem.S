@@ -4,11 +4,6 @@ data:  .long 0x80808080
 space: .space 244
 
 .text
-add $zero, $zero, $zero
-add $zero, $zero, $zero
-add $zero, $zero, $zero
-add $zero, $zero, $zero
-add $zero, $zero, $zero
 lw $r1, 4($zero)
 l32 $r2, 4($zero)
 l16 $r3, 4($zero)

@@ -1,4 +1,3 @@
-add $zero, $zero, $zero
 addi $r1, $zero, 1
 addi $r2, $zero, -10
 addi $r3, $r1, 9
