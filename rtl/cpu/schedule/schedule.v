@@ -48,13 +48,6 @@ module schedule(
     assign memunit_type = type && (unit==3'h4 | unit==3'h5 | unit==3'h6);
     assign branch_type = unit==3'h7;
 
-    reg start_stall;
-    always @(posedge clk or negedge rst_n)
-    begin
-        if(~rst_n) start_stall <= 0;
-        else start_stall <= 1;
-    end
-
     wire instIssued;
     assign instIssued = alu1_en | alu2_en | advint_en | memunit_en | branch_en;
 
@@ -63,11 +56,9 @@ module schedule(
     always @(*)
     begin
         operand_unavailable = 0;
-        //We are starting up and wish to stall while the decode pipeline fills
-        if(~start_stall) operand_unavailable = 1;
 
         //The register was previously busy
-        else if(reg_busy[r1_in_rn] && r1_in_rn!=reg1_finished && r1_in_rn!=reg2_finished) operand_unavailable = 1;
+        if(reg_busy[r1_in_rn] && r1_in_rn!=reg1_finished && r1_in_rn!=reg2_finished) operand_unavailable = 1;
         else if(reg_busy[r2_in_rn] && r2_in_rn!=reg2_finished && r2_in_rn!=reg1_finished) operand_unavailable = 1;
 
         //We just issued something to an execution unit
@@ -90,7 +81,7 @@ module schedule(
     always @(*)
     begin
         sc_ready = 0;
-        if(~operand_unavailable & ~branch_busy) begin
+        if(~operand_unavailable & ~branch_busy) begin //TODO Branch busy condition can probably be moved outside the module via muxing of the unit_en lines with the operation cancel signal
             if(alu_type & (~alu1_busy | ~alu2_busy)) sc_ready = 1;
             else if(advint_type & ~advint_busy) sc_ready = 1;
             else if(memunit_type & ~memunit_busy) sc_ready = 1;

@@ -25,7 +25,7 @@ module raisin64 (
     output jtag_tdo
     );
 
-    wire imem_data_ready;
+    reg imem_data_ready;
     wire imem_addr_valid;
     wire[63:0] imem_addr;
     wire[63:0] imem_data;
@@ -81,7 +81,10 @@ module raisin64 (
         .dmem_wstrobe(dmem_wstrobe)
         );
 
-    assign imem_data_ready = 1;
+    always @(posedge clk or negedge rst_n) begin
+        if(~rst_n) imem_data_ready <= 0;
+        else imem_data_ready <= imem_addr_valid;
+    end
 
     ram #(
         .NUM_BYTES(256)
