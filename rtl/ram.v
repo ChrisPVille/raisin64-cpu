@@ -30,13 +30,16 @@ module ram(input clk,
         end
     end
 
+    wire[127:0] data_in_shift;
+    assign data_in_shift = {data_in, 64'h0} >> addr[2:0]*8;
+
     generate
     genvar i;
     for(i = 0; i < 8; i = i+1) begin
         always @(posedge clk)
             if(cs)
                 if(weA_b[i]) begin
-                    ram[addr[63:3]][(i+1)*8-1:i*8] <= data_in[(i+1)*8-1:i*8];
+                    ram[addr[63:3]][(i+1)*8-1:i*8] <= data_in_shift[64+(i+1)*8-1:64+i*8];
                 end
         end
 
@@ -44,7 +47,7 @@ module ram(input clk,
         always @(posedge clk)
             if(cs)
                 if(weB_b[i]) begin
-                    ram[addr[63:3]+1][(i+1)*8-1:i*8] <= data_in[(i+1)*8-1:i*8];
+                    ram[addr[63:3]+1][(i+1)*8-1:i*8] <= data_in_shift[(i+1)*8-1:i*8];
                 end
         end
     endgenerate
