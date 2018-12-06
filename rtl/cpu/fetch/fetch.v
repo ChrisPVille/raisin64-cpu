@@ -14,7 +14,7 @@ module fetch(
 
     //# {{data|Pipeline Data}}
     output reg[63:0] inst_data,
-    output[63:0] next_seq_pc,
+    output[63:0] next_jump_pc,
     input[63:0] jump_pc,
 
     //# {{control|Pipeline Status}}
@@ -36,6 +36,11 @@ module fetch(
     end
 
     assign imem_addr = pc;
+
+    //Becuase the PC is "ahead" by a cycle and the data leaving the fetch
+    //module is "behind", our prev_pc will actually point at the next PC
+    //for any associated jumps.
+    assign next_jump_pc = prev_pc;
 
     reg[63:0] next_seq_pc;
     always @(*) begin
@@ -70,7 +75,8 @@ module fetch(
             inst_data <= 64'h0;
         end else begin
             just_stalled <= stall;
-            if(imem_data_valid & ~stall) inst_data <= imem_data;
+            if(~imem_data_valid | do_jump) inst_data <= 64'h0;
+            else if(~stall) inst_data <= imem_data;
         end
     end
 

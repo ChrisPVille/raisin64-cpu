@@ -43,7 +43,7 @@ module pipeline(
         .imem_data_valid(imem_data_valid),
         .imem_addr_valid(imem_addr_valid),
         .inst_data(fe_inst),
-        .next_seq_pc(fe_next_pc),
+        .next_jump_pc(fe_next_pc),
         .jump_pc(jump_pc), .do_jump(do_jump),
         .stall(~sc_ready)
         );
