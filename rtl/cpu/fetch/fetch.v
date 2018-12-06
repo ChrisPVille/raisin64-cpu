@@ -13,8 +13,8 @@ module fetch(
     output imem_addr_valid,
 
     //# {{data|Pipeline Data}}
-    output[63:0] inst_data,
-    output reg[63:0] next_seq_pc,
+    output reg[63:0] inst_data,
+    output[63:0] next_seq_pc,
     input[63:0] jump_pc,
 
     //# {{control|Pipeline Status}}
@@ -22,50 +22,59 @@ module fetch(
     input stall
     );
 
-    reg[63:0] prev_pc;
-
-    wire advance, advance16, advance32, advance64;
-    assign advance = advance16 | advance32 | advance64;
-
-    assign advance16 = ~stall && ~imem_data[63];
-    assign advance32 = ~stall && (imem_data[63:62] == 2'b10);
-    assign advance64 = ~stall && (imem_data[63:62] == 2'b11);
+    reg[63:0] pc, next_pc, prev_pc;
 
     always @(posedge clk or negedge rst_n)
     begin
         if(~rst_n) begin
-            next_seq_pc <= 64'h0;
+            //pc <= 64'h0;
             prev_pc <= 64'h0;
         end else begin
-            if(do_jump) next_seq_pc <= jump_pc;
-            else if(imem_data_valid) begin
-                if(advance) prev_pc <= next_seq_pc;
-                if(advance16) next_seq_pc <= next_seq_pc + 2;
-                else if(advance32) next_seq_pc <= next_seq_pc + 4;
-                else if(advance64) next_seq_pc <= next_seq_pc + 8;
-            end
+            //pc <= next_pc;
+            prev_pc <= pc;
         end
     end
 
-    assign imem_addr_valid = 1;
+    assign imem_addr = pc;
 
-    reg[63:0] inst_data_pre;
+    reg[63:0] next_seq_pc;
+    always @(*) begin
+        casex(imem_data[63:62])
+        2'b0x: next_seq_pc = prev_pc + 2;
+        2'b10: next_seq_pc = prev_pc + 4;
+        2'b11: next_seq_pc = prev_pc + 8;
+        endcase
+    end
 
+    always @(*) begin
+        pc = prev_pc;
+        if(do_jump) pc = jump_pc;
+        else if(stall) pc = prev_pc;
+        else if(imem_data_valid) begin
+            pc = next_seq_pc;
+        end
+    end
+
+    reg[63:0] next_data;
+    always @(*) begin
+        next_data = inst_data;
+        if(imem_data_valid) next_data = imem_data;
+    end
+
+    reg[63:0] prev_data;
+    reg just_stalled;
     always @(posedge clk or negedge rst_n)
     begin
-        if(~rst_n) inst_data_pre <= 64'h0;
-        else begin
-            if(imem_data_valid)
-                inst_data_pre <= imem_data;
-            else
-                inst_data_pre <= 64'h0;
+        if(~rst_n) begin
+            just_stalled <= 0;
+            inst_data <= 64'h0;
+        end else begin
+            just_stalled <= stall;
+            if(imem_data_valid & ~stall) inst_data <= imem_data;
         end
     end
 
-    assign imem_addr = do_jump ? jump_pc :
-                       advance ? next_seq_pc :
-                       prev_pc;
-
-    assign inst_data = advance ? imem_data : inst_data_pre;
+    //assign inst_data = ~imem_data_valid ? 64'h0 :  stall|just_stalled ? prev_data : imem_data;
+    assign imem_addr_valid = 1;
 
 endmodule

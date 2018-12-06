@@ -82,7 +82,7 @@ module pipeline(
     begin
         if(~rst_n) begin
             de_next_pc <= 64'h0;
-        end else begin
+        end else if (sc_ready) begin
             if(cancel_pending) de_next_pc <= 64'h0;
             else de_next_pc <= fe_next_pc;
         end
