@@ -57,8 +57,13 @@ module ram(input clk,
         end
     end
 
+    reg[2:0] addr_lsb;
+    always @(posedge clk) begin
+        addr_lsb <= addr[2:0];
+    end
+
     always @(*) begin
-        data_out = ({ramA_result,ramB_result} >> ((8-addr[2:0])*8)) & 64'hFFFFFFFFFFFFFFFF;
+        data_out = ({ramA_result,ramB_result} >> ((8-addr_lsb)*8)) & 64'hFFFFFFFFFFFFFFFF;
     end
 
     //Populate our program memory with the user-provided hex file
