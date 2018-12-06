@@ -210,7 +210,7 @@ module pipeline(
         .clk(clk), .rst_n(rst_n),
         .in1(rf_data1), .in2(rf_data2),
         .out(ex_advint_result), .out2(ex_advint_result2),
-        .ex_enable(sc_alu2_en), .ex_busy(sc_alu2_busy),
+        .ex_enable(sc_advint_en), .ex_busy(sc_advint_busy),
         .rd_in_rn(sc_rd_rn), .rd2_in_rn(sc_rd2_rn),
         .unit(sc_unit), .op(sc_op),
         .rd_out_rn(ex_advint_rd_rn), .rd2_out_rn(ex_advint_rd2_rn),
