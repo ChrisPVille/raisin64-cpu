@@ -77,10 +77,11 @@ module schedule(
                 //And it matches the previous destination register number.  We
                 //will stall here until it is picked up by reg_busy next cycle
                 if(rd_out_rn==r1_in_rn) operand_unavailable = 1;
-                else if(rd_out_rn==r2_in_rn) operand_unavailable = 1;
+                else if(rd2_out_rn==r1_in_rn) operand_unavailable = 1;
+
             end
             if(|r2_in_rn) begin
-                if(rd2_out_rn==r1_in_rn) operand_unavailable = 1;
+                if(rd_out_rn==r2_in_rn) operand_unavailable = 1;
                 else if(rd2_out_rn==r2_in_rn) operand_unavailable = 1;
             end
         end
