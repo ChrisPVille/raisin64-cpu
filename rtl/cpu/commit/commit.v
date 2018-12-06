@@ -113,12 +113,12 @@ module commit(
 
     always @(*)
     begin
-        if(pending_valid[6] | branch_valid) next_state = STATE_P6;
-        else if(pending_valid[5] | (memunit_valid & |memunit_rn)) next_state = STATE_P5;
-        else if(pending_valid[4] | (advint_valid & |advint_rn2)) next_state = STATE_P4;
-        else if(pending_valid[3] | (advint_valid & |advint_rn)) next_state = STATE_P3;
-        else if(pending_valid[2] | (alu2_valid & |alu2_rn)) next_state = STATE_P2;
-        else if(pending_valid[1] | (alu1_valid & |alu1_rn)) next_state = STATE_P1;
+        if((pending_valid[6] & state != STATE_P6) | branch_valid) next_state = STATE_P6;
+        else if((pending_valid[5] & state != STATE_P5) | (memunit_valid & |memunit_rn)) next_state = STATE_P5;
+        else if((pending_valid[4] & state != STATE_P4) | (advint_valid & |advint_rn2)) next_state = STATE_P4;
+        else if((pending_valid[3] & state != STATE_P3) | (advint_valid & |advint_rn)) next_state = STATE_P3;
+        else if((pending_valid[2] & state != STATE_P2) | (alu2_valid & |alu2_rn)) next_state = STATE_P2;
+        else if((pending_valid[1] & state != STATE_P1) | (alu1_valid & |alu1_rn)) next_state = STATE_P1;
         else next_state = STATE_IDLE;
     end
 
