@@ -23,8 +23,8 @@ module decode(
     output reg[5:0] r2_rn,
 
     //# {{control|Scheduler Feedback}}
-    input stall
-
+    input stall,
+    input cancel
     );
 
     wire[63:0] canonInst;
@@ -93,7 +93,18 @@ module decode(
             r1_rn <= 0;
             r2_rn <= 0;
         end else begin
-            if(~stall) begin
+            if(cancel) begin
+                type <= 0;
+                unit <= 0;
+                op <= 0;
+                rs1_rn <= 0;
+                rs2_rn <= 0;
+                rd_rn <= 0;
+                rd2_rn <= 0;
+                imm_data <= 0;
+                r1_rn <= 0;
+                r2_rn <= 0;
+            end else if(~stall) begin
                 type <= canonInst[61];
                 unit <= canonInst[60:58];
                 op <= canonInst[57:56];

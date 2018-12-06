@@ -28,8 +28,8 @@ module pipeline(
     wire sc_ready;
     wire[63:0] jump_pc;
     wire do_jump;
-    wire cancel_pending;
-    assign cancel_pending = do_jump;
+    wire cancel_now;
+    assign cancel_now = do_jump;
 
     //////////  FETCH    //////////
     wire[63:0] fe_inst;
@@ -48,6 +48,12 @@ module pipeline(
         .stall(~sc_ready)
         );
 
+    reg fe_cancelled;
+    always @(posedge clk or negedge rst_n) begin
+        if(~rst_n) fe_cancelled <= 0;
+        else fe_cancelled <= cancel_now;
+    end
+
     //////////  DECODE   //////////
 
     wire de_type;
@@ -64,7 +70,7 @@ module pipeline(
 
     decode decode1(
         .clk(clk), .rst_n(rst_n),
-        .instIn(cancel_pending ? 64'h0 : fe_inst),
+        .instIn(fe_inst),
         .type(de_type),
         .unit(de_unit),
         .op(de_op),
@@ -72,19 +78,24 @@ module pipeline(
         .rd_rn(de_rd_rn), .rd2_rn(de_rd2_rn),
         .imm_data(de_imm_data),
         .r1_rn(de_r1_rn), .r2_rn(de_r2_rn),
-        .stall(~sc_ready)
+        .stall(~sc_ready), .cancel(cancel_now|fe_cancelled)
         );
 
     //Delay the Next PC to the schedule stage
     reg[63:0] de_next_pc;
+    reg de_cancelled;
 
     always @(posedge clk or negedge rst_n)
     begin
         if(~rst_n) begin
             de_next_pc <= 64'h0;
-        end else if (sc_ready) begin
-            if(cancel_pending) de_next_pc <= 64'h0;
-            else de_next_pc <= fe_next_pc;
+            de_cancelled <= 0;
+        end else begin
+            de_cancelled <= cancel_now|fe_cancelled;
+            if (sc_ready) begin
+                if(cancel_now) de_next_pc <= 64'h0;
+                else de_next_pc <= fe_next_pc;
+            end
         end
     end
 
@@ -126,8 +137,8 @@ module pipeline(
         .clk(clk), .rst_n(rst_n),
         .type(de_type), .unit(de_unit), .op(de_op),
         .r1_in_rn(de_r1_rn), .r2_in_rn(de_r2_rn),
-        .rd_in_rn(cancel_pending ? 6'h0 : de_rd_rn),
-        .rd2_in_rn(cancel_pending ? 6'h0 : de_rd2_rn),
+        .rd_in_rn(cancel_now|fe_cancelled|de_cancelled ? 6'h0 : de_rd_rn),
+        .rd2_in_rn(cancel_now|fe_cancelled|de_cancelled ? 6'h0 : de_rd2_rn),
         .sc_ready(sc_ready),
         .rd_out_rn(sc_rd_rn), .rd2_out_rn(sc_rd2_rn),
 
@@ -157,7 +168,7 @@ module pipeline(
             sc_imm_data <= 64'h0;
             sc_next_pc <= 64'h0;
         end else begin
-            if(cancel_pending) sc_unit <= 3'h0;
+            if(cancel_now|fe_cancelled|de_cancelled) sc_unit <= 3'h0;
             else sc_unit <= de_unit;
 
             sc_type <= de_type;
