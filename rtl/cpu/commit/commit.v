@@ -59,6 +59,11 @@ module commit(
 
     integer i;
 
+
+    //TODO A side-effect of the current implemtation is that a short running instruction issued after a long running
+    //one which affects the same destination register might get written/overwritten in the wrong order. This will be
+    //fixed by the proposed PC instruction graduation control table necessary for exceptions
+
     //The *unit*_valid signals need to remain high for only one cycle per transaction or all hell will break loose.
     always @(posedge clk or negedge rst_n)
     begin
