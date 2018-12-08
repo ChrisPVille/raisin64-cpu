@@ -9,7 +9,6 @@ module schedule(
     //# {{data|Decoded Instruction Data}}
     input type,
     input[2:0] unit,
-    input[1:0] op,
     input[5:0] r1_in_rn,
     input[5:0] r2_in_rn,
     input[5:0] rd_in_rn,

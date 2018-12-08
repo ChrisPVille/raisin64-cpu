@@ -42,7 +42,7 @@ module ex_advint(
         end else begin
             valid <= ex_enable;
             out <= out_pre;
-            out2 <= out_pre;
+            out2 <= out2_pre;
             rd_out_rn <= rd_in_rn;
             rd2_out_rn <= rd2_in_rn;
         end

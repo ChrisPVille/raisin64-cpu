@@ -135,7 +135,7 @@ module pipeline(
 
     schedule schedule1(
         .clk(clk), .rst_n(rst_n),
-        .type(de_type), .unit(de_unit), .op(de_op),
+        .type(de_type), .unit(de_unit),
         .r1_in_rn(de_r1_rn), .r2_in_rn(de_r2_rn),
         .rd_in_rn(cancel_now|fe_cancelled|de_cancelled ? 6'h0 : de_rd_rn),
         .rd2_in_rn(cancel_now|fe_cancelled|de_cancelled ? 6'h0 : de_rd2_rn),
@@ -221,7 +221,7 @@ module pipeline(
         .clk(clk), .rst_n(rst_n),
         .in1(rf_data1), .in2(rf_data2),
         .out(ex_advint_result), .out2(ex_advint_result2),
-        .ex_enable(1'b0), .ex_busy(sc_advint_busy),
+        .ex_enable(sc_advint_en), .ex_busy(sc_advint_busy),
         .rd_in_rn(sc_rd_rn), .rd2_in_rn(sc_rd2_rn),
         .unit(sc_unit), .op(sc_op),
         .rd_out_rn(ex_advint_rd_rn), .rd2_out_rn(ex_advint_rd2_rn),
