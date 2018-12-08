@@ -8,13 +8,13 @@ module memory_map(
     );
 
     //As physical addresses are sign-extended from the 47th bit,
-    //only bits 47:14 really matter
+    //only bits 46:14 really matter
 
     //Upper-half of the memory map is IO for now
-    assign io = addr[47];
+    assign io = addr[46];
 
-    assign led = (addr[47:14] == 80000001);
-    assign sw = (addr[47:14] == 80000002);
-    assign vga = (addr[47:14] == 80000003);
+    assign led = (addr[46:14] == 33'h100000001);
+    assign sw  = (addr[46:14] == 33'h100000002);
+    assign vga = (addr[46:14] == 33'h100000003);
 
 endmodule

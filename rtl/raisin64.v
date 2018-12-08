@@ -90,7 +90,7 @@ module raisin64 (
 
     //TODO For now, the external memory bus is just for data memory.  When the time
     //comes for caches, this will change to the unified external memory bus.
-    assign dmem_to_cpu                = io_space ? mem_dout : dmem_from_ram;
+    assign dmem_to_cpu                = io_space ? mem_din : dmem_from_ram;
     assign mem_dout                   = effective_dmem_to_ram;
     assign mem_addr                   = effective_dmem_addr;
     assign mem_addr_valid             = 1;
