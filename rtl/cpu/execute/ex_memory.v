@@ -1,5 +1,7 @@
 //Raisin64 Execute Unit - Memory Unit
 
+`include "io_def.vh"
+
 module ex_memory(
     input clk,
     input rst_n,
@@ -126,18 +128,18 @@ module ex_memory(
                     rd_out_rn <= rd_in_rn_reg;
                     case(op_reg)
                     //64-Bit load
-                    0: out <= dmem_din;
+                    RAM_WIDTH64: out <= dmem_din;
 
                     //32-Bit load
-                    1: out <= sign_extend_reg ? {{32{dmem_din[63]}},dmem_din[63:32]} :
+                    RAM_WIDTH32: out <= sign_extend_reg ? {{32{dmem_din[63]}},dmem_din[63:32]} :
                                                 {{32{1'b0}},dmem_din[63:32]};
 
                     //16-Bit load
-                    2: out <= sign_extend_reg ? {{48{dmem_din[63]}},dmem_din[63:48]} :
+                    RAM_WIDTH16: out <= sign_extend_reg ? {{48{dmem_din[63]}},dmem_din[63:48]} :
                                                 {{48{1'b0}},dmem_din[63:48]};
 
                     //8-Bit load
-                    3: out <= sign_extend_reg ? {{56{dmem_din[63]}},dmem_din[63:56]} :
+                    RAM_WIDTH8: out <= sign_extend_reg ? {{56{dmem_din[63]}},dmem_din[63:56]} :
                                                 {{56{1'b0}},dmem_din[63:56]};
                     endcase
                     state <= START;

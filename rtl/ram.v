@@ -1,4 +1,7 @@
 //Test RAM
+
+`include "io_def.vh"
+
 module ram(input clk,
             input we,
             input cs,
@@ -22,10 +25,10 @@ module ram(input clk,
         weB_b = 8'h00;
         if(we) begin
             case(write_width)
-            2'b00: {weA_b,weB_b} = 16'hFF00 >> addr[2:0];
-            2'b01: {weA_b,weB_b} = 16'hF000 >> addr[2:0];
-            2'b10: {weA_b,weB_b} = 16'hC000 >> addr[2:0];
-            2'b11: {weA_b,weB_b} = 16'h8000 >> addr[2:0];
+            RAM_WIDTH64: {weA_b,weB_b} = 16'hFF00 >> addr[2:0];
+            RAM_WIDTH32: {weA_b,weB_b} = 16'hF000 >> addr[2:0];
+            RAM_WIDTH16: {weA_b,weB_b} = 16'hC000 >> addr[2:0];
+            RAM_WIDTH8: {weA_b,weB_b} = 16'h8000 >> addr[2:0];
             endcase
         end
     end
