@@ -87,7 +87,7 @@ module raisin64_tb();
 
         #15 rst_n = 1;
 
-        #1000 $finish;
+        #100000 $finish;
     end
 
 endmodule
