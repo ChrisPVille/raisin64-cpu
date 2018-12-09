@@ -130,7 +130,7 @@ module raisin64 (
         .INIT_FILE(DMEM_INIT)
         ) dmem (
         .clk(clk),
-        .we(dmem_wstrobe|dbg_dmem_we), .cs(dmem_wstrobe|dmem_rstrobe|dbg_dmem_ce),
+        .we(~io_space & (dmem_wstrobe|dbg_dmem_we)), .cs(~io_space & (dmem_wstrobe|dmem_rstrobe|dbg_dmem_ce)),
         .write_width(dmem_write_width),
         .addr(effective_dmem_addr),
         .data_in(effective_dmem_to_ram),
