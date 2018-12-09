@@ -25,6 +25,9 @@ module raisin64 (
     output jtag_tdo
     );
 
+    parameter IMEM_INIT = "";
+    parameter DMEM_INIT = "";
+
     //// Debug Signals ////
     wire dbg_resetn_cpu, dbg_halt_cpu;
     wire cpu_rst_n;
@@ -59,7 +62,8 @@ module raisin64 (
     end
 
     ram #(
-        .NUM_BYTES(2*1024)
+        .NUM_BYTES(2*1024),
+        .INIT_FILE(IMEM_INIT)
         ) imem (
         .clk(clk),
         .we(dbg_imem_we), .cs(1'b1),
@@ -122,7 +126,8 @@ module raisin64 (
     end
 
     ram #(
-        .NUM_BYTES(512)
+        .NUM_BYTES(512),
+        .INIT_FILE(DMEM_INIT)
         ) dmem (
         .clk(clk),
         .we(dmem_wstrobe|dbg_dmem_we), .cs(dmem_wstrobe|dmem_rstrobe|dbg_dmem_ce),
