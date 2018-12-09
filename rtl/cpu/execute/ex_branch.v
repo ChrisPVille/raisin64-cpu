@@ -63,6 +63,6 @@ module ex_branch(
         end
     end
 
-    assign ex_busy = ex_enable;
+    assign ex_busy = ex_enable | stall;
 
 endmodule
