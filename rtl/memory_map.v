@@ -15,6 +15,6 @@ module memory_map(
 
     assign led = (addr[46:14] == 33'h100000001);
     assign sw  = (addr[46:14] == 33'h100000002);
-    assign vga = (addr[46:14] == 33'h100000003);
+    assign vga = (addr[46:18] == 33'h10000001);
 
 endmodule
