@@ -59,7 +59,7 @@ module raisin64 (
     end
 
     ram #(
-        .NUM_BYTES(256)
+        .NUM_BYTES(2*1024)
         ) imem (
         .clk(clk),
         .we(dbg_imem_we), .cs(1'b1),
@@ -122,7 +122,7 @@ module raisin64 (
     end
 
     ram #(
-        .NUM_BYTES(256)
+        .NUM_BYTES(512)
         ) dmem (
         .clk(clk),
         .we(dmem_wstrobe|dbg_dmem_we), .cs(dmem_wstrobe|dmem_rstrobe|dbg_dmem_ce),
