@@ -101,7 +101,7 @@ module raisin64 (
     //in case an IO unit requires it (the ram modules handle this condition internally).
     //Instead we simply state misaligned IO access it is unsupported (for now).
     always @(*) begin
-        if((dmem_rstrobe|dmem_wstrobe) & io_space & |dmem_write_width) begin
+        if((dmem_rstrobe|dmem_wstrobe) & io_space & |dmem_write_width & ~clk) begin
             $display("Unaligned data IO access not supported in this revision");
             $finish;
         end
@@ -143,7 +143,7 @@ module raisin64 (
         .imem_addr_valid(imem_addr_valid),
         .dmem_addr(dmem_addr), .dmem_dout(dmem_to_ram),
         .dmem_din(dmem_to_cpu),
-        .dmem_cycle_complete(dmem_cycle_complete),
+        .dmem_cycle_complete(dmem_cycle_complete & ~dmem_rstrobe & ~dmem_wstrobe),
         .dmem_write_width(dmem_write_width),
         .dmem_rstrobe(dmem_rstrobe),
         .dmem_wstrobe(dmem_wstrobe)

@@ -135,7 +135,7 @@ module pipeline(
 
     schedule schedule1(
         .clk(clk), .rst_n(rst_n),
-        .type(de_type), .unit(de_unit),
+        .type(de_type), .unit(cancel_now|fe_cancelled|de_cancelled ? 3'h0 : de_unit),
         .r1_in_rn(de_r1_rn), .r2_in_rn(de_r2_rn),
         .rd_in_rn(cancel_now|fe_cancelled|de_cancelled ? 6'h0 : de_rd_rn),
         .rd2_in_rn(cancel_now|fe_cancelled|de_cancelled ? 6'h0 : de_rd2_rn),
