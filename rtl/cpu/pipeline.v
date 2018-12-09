@@ -93,7 +93,7 @@ module pipeline(
         end else begin
             de_cancelled <= cancel_now|fe_cancelled;
             if (sc_ready) begin
-                if(cancel_now) de_next_pc <= 64'h0;
+                if(cancel_now|fe_cancelled) de_next_pc <= 64'h0;
                 else de_next_pc <= fe_next_pc;
             end
         end
@@ -135,10 +135,10 @@ module pipeline(
 
     schedule schedule1(
         .clk(clk), .rst_n(rst_n),
-        .type(de_type), .unit(cancel_now|fe_cancelled|de_cancelled ? 3'h0 : de_unit),
+        .type(de_type), .unit(cancel_now|de_cancelled ? 3'h0 : de_unit),
         .r1_in_rn(de_r1_rn), .r2_in_rn(de_r2_rn),
-        .rd_in_rn(cancel_now|fe_cancelled|de_cancelled ? 6'h0 : de_rd_rn),
-        .rd2_in_rn(cancel_now|fe_cancelled|de_cancelled ? 6'h0 : de_rd2_rn),
+        .rd_in_rn(cancel_now|de_cancelled ? 6'h0 : de_rd_rn),
+        .rd2_in_rn(cancel_now|de_cancelled ? 6'h0 : de_rd2_rn),
         .sc_ready(sc_ready),
         .rd_out_rn(sc_rd_rn), .rd2_out_rn(sc_rd2_rn),
 
@@ -168,7 +168,7 @@ module pipeline(
             sc_imm_data <= 64'h0;
             sc_next_pc <= 64'h0;
         end else begin
-            if(cancel_now|fe_cancelled|de_cancelled) sc_unit <= 3'h0;
+            if(cancel_now|de_cancelled) sc_unit <= 3'h0;
             else sc_unit <= de_unit;
 
             sc_type <= de_type;
