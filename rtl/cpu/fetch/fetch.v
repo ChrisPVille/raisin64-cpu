@@ -22,6 +22,8 @@ module fetch(
     input stall
     );
 
+    //TODO Register type jumps can still get us off 16-bit boundries. Probably should just ignore the bottom bit
+
     reg[63:0] pc, next_pc, prev_pc;
 
     always @(posedge clk or negedge rst_n)

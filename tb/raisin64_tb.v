@@ -136,7 +136,10 @@ module raisin64_tb();
 
         #15 rst_n = 1;
 
-        //#100000 $finish;
+        #400 SW = 16'h5454;
+        #400 SW = 16'h8263;
+
+        #100000 $finish;
     end
 
 endmodule
