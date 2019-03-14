@@ -41,8 +41,8 @@ module debug_control(
     output reg[63:0] cpu_debug_to_dmem_data,
     input[63:0] cpu_dmem_to_debug_data,
     input cpu_dmem_to_debug_data_ready,
-    output reg cpu_dmem_ce,
-    output reg cpu_dmem_we,
+    output reg cpu_dmem_rstrobe,
+    output reg cpu_dmem_wstrobe,
 
     output reg cpu_halt_cpu,
     output cpu_resetn_cpu
@@ -115,20 +115,27 @@ module debug_control(
         end
     end
 
+    reg[1:0] enter_w, enter_r;
+
     always @(posedge cpu_clk or negedge sys_rstn) begin
         if(~sys_rstn) begin
-            cpu_dmem_we <= 0;
-            cpu_dmem_ce <= 0;
+            enter_w <= 2'h0;
+            enter_r <= 2'h0;
         end else begin
-            cpu_dmem_we <= 0;
-            cpu_dmem_ce <= 0;
-            if(execUserOp) case(jtag_userOp)
-                DEBUGOP_READDMEM_OP: cpu_dmem_ce <= 1;
-                DEBUGOP_WRITEDMEM_OP: begin
-                    cpu_dmem_we <= 1;
-                    cpu_dmem_ce <= 1;
-                end
-            endcase
+            enter_r <= {enter_r[0], execUserOp&&jtag_userOp==DEBUGOP_READDMEM_OP ? 1 : 0};
+            enter_w <= {enter_w[0], execUserOp&&jtag_userOp==DEBUGOP_WRITEDMEM_OP ? 1 : 0};
+        end
+    end
+
+    always @(posedge cpu_clk or negedge sys_rstn) begin
+        if(~sys_rstn) begin
+            cpu_dmem_wstrobe <= 0;
+            cpu_dmem_rstrobe <= 0;
+        end else begin
+            cpu_dmem_wstrobe <= 0;
+            cpu_dmem_rstrobe <= 0;
+            if(enter_w == 2'h1) cpu_dmem_wstrobe <= 1;
+            else if(enter_r == 2'h1) cpu_dmem_rstrobe <= 1;
         end
     end
 

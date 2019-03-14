@@ -2,12 +2,39 @@
 
 module raisin64_tb();
 
-    reg clk, rst_n;
+    reg clk, clk_100mhz, rst_n;
     wire[15:0] LED;
     reg[15:0] SW;
 
     defparam cpu.imem.INIT_FILE = "/home/christopher/git/raisin64-cpu/support/imem.hex";
-    defparam cpu.dmem.INIT_FILE = "/home/christopher/git/raisin64-cpu/support/dmem.hex";
+    //defparam cpu.dmem.INIT_FILE = "/home/christopher/git/raisin64-cpu/support/dmem.hex";
+
+    //////  DDR2 Model  //////
+    wire ddr2_ck_p, ddr2_ck_n, ddr2_cke, ddr2_cs_n, ddr2_ras_n, ddr2_cas_n, ddr2_we_n, ddr2_odt;
+    wire[15:0] ddr2_dq;
+    wire[1:0] ddr2_dqs_n;
+    wire[1:0] ddr2_dqs_p;
+    wire[12:0] ddr2_addr;
+    wire[2:0] ddr2_ba;
+    wire[1:0] ddr2_dm;
+
+    ddr2_model fake_ddr2(
+        .ck(ddr2_ck_p),
+        .ck_n(ddr2_ck_n),
+        .cke(ddr2_cke),
+        .cs_n(ddr2_cs_n),
+        .ras_n(ddr2_ras_n),
+        .cas_n(ddr2_cas_n),
+        .we_n(ddr2_we_n),
+        .dm_rdqs(ddr2_dm),
+        .ba(ddr2_ba),
+        .addr(ddr2_addr),
+        .dq(ddr2_dq),
+        .dqs(ddr2_dqs_p),
+        .dqs_n(ddr2_dqs_n),
+        .rdqs_n(),
+        .odt(ddr2_odt)
+        );
 
     //////////  CPU  //////////
     wire[63:0] mem_from_cpu;
@@ -19,6 +46,7 @@ module raisin64_tb();
 
     raisin64 cpu(
         .clk(clk),
+        .clk_100mhz(clk_100mhz),
         .rst_n(rst_n),
         .mem_din(mem_to_cpu),
         .mem_dout(mem_from_cpu),
@@ -26,6 +54,22 @@ module raisin64_tb();
         .mem_addr_valid(mem_addr_valid),
         .mem_dout_write(mem_from_cpu_write),
         .mem_din_ready(mem_to_cpu_ready),
+
+        .ddr2_addr(ddr2_addr),
+        .ddr2_ba(ddr2_ba),
+        .ddr2_cas_n(ddr2_cas_n),
+        .ddr2_ck_n(ddr2_ck_n),
+        .ddr2_ck_p(ddr2_ck_p),
+        .ddr2_cke(ddr2_cke),
+        .ddr2_ras_n(ddr2_ras_n),
+        .ddr2_we_n(ddr2_we_n),
+        .ddr2_dq(ddr2_dq),
+        .ddr2_dqs_n(ddr2_dqs_n),
+        .ddr2_dqs_p(ddr2_dqs_p),
+        .ddr2_cs_n(ddr2_cs_n),
+        .ddr2_dm(ddr2_dm),
+        .ddr2_odt(ddr2_odt),
+
         .jtag_tck(1'b0),
         .jtag_tms(1'b0),
         .jtag_tdi(1'b0),
@@ -72,7 +116,12 @@ module raisin64_tb();
 
     initial begin
         clk = 1;
-        forever #5 clk = ~clk;
+        forever #9 clk = ~clk;
+    end
+
+    initial begin
+        clk_100mhz = 1;
+        forever #5 clk_100mhz = ~clk_100mhz;
     end
 
     initial begin
@@ -87,7 +136,7 @@ module raisin64_tb();
 
         #15 rst_n = 1;
 
-        #100000 $finish;
+        //#100000 $finish;
     end
 
 endmodule
