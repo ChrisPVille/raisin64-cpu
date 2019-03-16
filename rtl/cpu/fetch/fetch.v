@@ -28,13 +28,8 @@ module fetch(
 
     always @(posedge clk or negedge rst_n)
     begin
-        if(~rst_n) begin
-            //pc <= 64'h0;
-            prev_pc <= 64'h0;
-        end else begin
-            //pc <= next_pc;
-            prev_pc <= pc;
-        end
+        if(~rst_n) prev_pc <= 64'h0;
+        else prev_pc <= pc;
     end
 
     assign imem_addr = pc;
@@ -55,11 +50,10 @@ module fetch(
 
     always @(*) begin
         pc = prev_pc;
-        if(do_jump) pc = jump_pc;
+        if(~rst_n); //Do nothing
+        else if(do_jump) pc = jump_pc;
         else if(stall) pc = prev_pc;
-        else if(imem_data_valid) begin
-            pc = next_seq_pc;
-        end
+        else if(imem_data_valid) pc = next_seq_pc;
     end
 
     reg[63:0] next_data;

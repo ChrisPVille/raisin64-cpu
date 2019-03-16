@@ -48,7 +48,8 @@ module raisin64 (
     //// Debug Signals ////
     wire dbg_resetn_cpu, dbg_halt_cpu;
     wire cpu_rst_n;
-    assign cpu_rst_n = rst_n & dbg_resetn_cpu;
+    wire dmem_ready;
+    assign cpu_rst_n = rst_n & dbg_resetn_cpu & dmem_ready;
 
     wire[63:0] dbg_imem_addr;
     wire[63:0] dbg_imem_to_ram;
@@ -185,7 +186,8 @@ module raisin64 (
         .data_out(dmem_from_ram),
         .rstrobe(~io_space & (dmem_rstrobe|dbg_dmem_rstrobe)),
         .wstrobe(~io_space & (dmem_wstrobe|dbg_dmem_wstrobe)),
-        .transaction_complete(mem_transaction_complete)
+        .transaction_complete(mem_transaction_complete),
+        .ready(dmem_ready)
         );
 
     //////////  Raisin64 Execution Core  //////////
