@@ -63,20 +63,16 @@ module fetch(
     end
 
     reg[63:0] prev_data;
-    reg just_stalled;
     always @(posedge clk or negedge rst_n)
     begin
         if(~rst_n) begin
-            just_stalled <= 0;
             inst_data <= 64'h0;
         end else begin
-            just_stalled <= stall;
             if(~imem_data_valid | do_jump) inst_data <= 64'h0;
             else if(~stall) inst_data <= imem_data;
         end
     end
 
-    //assign inst_data = ~imem_data_valid ? 64'h0 :  stall|just_stalled ? prev_data : imem_data;
     assign imem_addr_valid = 1;
 
 endmodule

@@ -80,7 +80,7 @@ module raisin64 (
     end
 
     ram #(
-        .NUM_BYTES(2*1024),
+        .NUM_BYTES(16*1024),
         .INIT_FILE(IMEM_INIT)
         ) imem (
         .clk(clk),
@@ -162,7 +162,7 @@ module raisin64 (
 
     physical_ram ddr(
         .clk_100mhz(clk_100mhz),
-        .rst_n(rst_n),
+        .rst_n(rst_n & dbg_resetn_cpu),
 
         .ddr2_addr(ddr2_addr),
         .ddr2_ba(ddr2_ba),
@@ -180,7 +180,7 @@ module raisin64 (
         .ddr2_odt(ddr2_odt),
 
         .cpu_clk(clk),
-        .addr(effective_dmem_addr[26:0]),
+        .addr(effective_dmem_addr[27:0]),
         .width(dmem_write_width),
         .data_in({64'h54545454_54545454, effective_dmem_to_ram}),
         .data_out(dmem_from_ram),
