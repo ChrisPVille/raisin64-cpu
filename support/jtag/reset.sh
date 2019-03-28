@@ -1,0 +1,2 @@
+#!/bin/sh
+openocd -f "raisin64_nodeps_openocd.cfg" -c "init; raisin64_reset; exit"
